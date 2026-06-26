@@ -177,3 +177,28 @@ li { margin-bottom: 6px; }
   .hero, .grid.two { grid-template-columns: 1fr; }
   .summaryCards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+.sourceActions {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 0.7fr;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.sourceActionButton {
+  margin-top: 0;
+}
+
+.exportButton {
+  background: #085153;
+}
+
+.resetButton {
+  background: var(--bad);
+}
+
+@media (max-width: 720px) {
+  .sourceActions {
+    grid-template-columns: 1fr;
+  }
+}

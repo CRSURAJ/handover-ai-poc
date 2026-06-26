@@ -78,17 +78,9 @@ export function SourcePackPanel({
         />
       </label>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1.4fr 1fr 0.7fr",
-          gap: "10px",
-          marginTop: "16px",
-        }}
-      >
+      <div className="sourceActions">
         <button
-          className="button"
-          style={{ marginTop: 0 }}
+          className="button sourceActionButton"
           onClick={onExtract}
           disabled={isUploading || isExtracting || !sourceText.trim()}
         >
@@ -100,8 +92,7 @@ export function SourcePackPanel({
         </button>
 
         <button
-          className="button"
-          style={{ marginTop: 0, background: "#085153" }}
+          className="button sourceActionButton exportButton"
           onClick={onExport}
           disabled={!hasResult}
         >
@@ -109,8 +100,7 @@ export function SourcePackPanel({
         </button>
 
         <button
-          className="button"
-          style={{ marginTop: 0, background: "#9f2534" }}
+          className="button sourceActionButton resetButton"
           onClick={onReset}
         >
           Reset
