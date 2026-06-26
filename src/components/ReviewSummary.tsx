@@ -2,7 +2,6 @@ import type { HandoverExtractionResult } from "@/lib/types";
 import type { ChecklistProgress } from "@/lib/handoverProgress";
 import { badgeClass, getStatusLabel } from "@/lib/handoverUi";
 
-
 type ReviewSummaryProps = {
   result: HandoverExtractionResult | null;
   progress: ChecklistProgress | null;
@@ -13,46 +12,55 @@ export function ReviewSummary({ result, progress }: ReviewSummaryProps) {
     <section className="panel">
       <div className="panelHeader">
         <div>
-          <h2>2. Review Summary</h2>
-          <p>
-            AI should assist, not silently approve. These results are for human
-            review.
-          </p>
+          <h2>Review Summary</h2>
+          <p className="subtle">AI assists — humans approve. Review before accepting.</p>
         </div>
+        <div className="panelNum">2</div>
       </div>
 
       {!result ? (
         <div className="empty">
-          Run extraction to see risk, missing information, and Ops summary.
+          <span className="emptyIcon">🔍</span>
+          Run extraction to see risk assessment, missing information, and Ops summary.
         </div>
       ) : (
         <div className="stack">
           <div className="summaryCards">
             <div className="metric">
-              <span>Status</span>
-              <strong className={badgeClass(result.review.overallStatus)}>
-                {getStatusLabel(result.review.overallStatus)}
+              <span>Overall Status</span>
+              <strong>
+                <span className={badgeClass(result.review.overallStatus)}>
+                  {getStatusLabel(result.review.overallStatus)}
+                </span>
               </strong>
             </div>
 
             <div className="metric">
-              <span>Risk</span>
-              <strong className={badgeClass(result.review.riskLevel)}>
-                {result.review.riskLevel.toUpperCase()}
+              <span>Risk Level</span>
+              <strong>
+                <span className={badgeClass(result.review.riskLevel)}>
+                  {result.review.riskLevel.toUpperCase()}
+                </span>
               </strong>
             </div>
 
             <div className="metric">
               <span>Progress</span>
               <strong>
-                {progress?.complete}/{progress?.total}
+                {progress?.complete ?? 0} / {progress?.total ?? 0}
               </strong>
+              <div className="progressWrap">
+                <div
+                  className="progressBar"
+                  style={{ width: `${progress?.percent ?? 0}%` }}
+                />
+              </div>
             </div>
           </div>
 
           <div>
             <h3>Executive Summary</h3>
-            <p>{result.review.executiveSummary}</p>
+            <p className="subtle">{result.review.executiveSummary}</p>
           </div>
 
           <div>

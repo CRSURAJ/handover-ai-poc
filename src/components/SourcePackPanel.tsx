@@ -15,7 +15,6 @@ type SourcePackPanelProps = {
   hasResult: boolean;
   fileInputKey: number;
   onSourceNameChange: (value: string) => void;
-  onSourceTextChange: (value: string) => void;
   onFilesChange: (files: FileList | null) => void;
   onExtract: () => void;
   onExport: () => void;
@@ -32,7 +31,6 @@ export function SourcePackPanel({
   hasResult,
   fileInputKey,
   onSourceNameChange,
-  onSourceTextChange,
   onFilesChange,
   onExtract,
   onExport,
@@ -42,56 +40,61 @@ export function SourcePackPanel({
     <section className="panel">
       <div className="panelHeader">
         <div>
-          <h2>1. Source Pack</h2>
-          <p>
-            Paste handover emails, quote text, meeting notes, or upload source
-            documents.
-          </p>
+          <h2>Source Pack</h2>
+          <p className="subtle">Upload source documents to auto-fill the checklist.</p>
         </div>
+        <div className="panelNum">1</div>
       </div>
 
-      <label className="label">
-        Source name
+      <div className="fieldGroup">
+        <label className="label">Source name</label>
         <input
           className="input"
           value={sourceName}
           onChange={(event) => onSourceNameChange(event.target.value)}
-          placeholder="Example: Project quote, sales handover email, meeting notes"
+          placeholder="e.g. Project Alpha — quote + email"
         />
-      </label>
+      </div>
 
-      <label className="label">
-        Upload source files
-        <input
-          key={fileInputKey}
-          className="input file"
-          type="file"
-          multiple
-          accept={SOURCE_FILE_ACCEPT}
-          onChange={(event) => onFilesChange(event.target.files)}
-        />
-      </label>
+      <div className="fieldGroup">
+        <label className="label">Upload source files</label>
+        <div className="fileZoneWrapper">
+          <div className="fileZone">
+            <input
+              key={fileInputKey}
+              type="file"
+              multiple
+              accept={SOURCE_FILE_ACCEPT}
+              onChange={(event) => onFilesChange(event.target.files)}
+            />
+            <div className="fileZoneIcon">📎</div>
+            <p className="fileZonePrimary">
+              <strong>Click to upload</strong> or drag and drop
+            </p>
+            <p className="fileZoneSub">
+              {formatSupportedSourceFileTypes()} · max {MAX_SOURCE_FILES} files
+              · {MAX_SOURCE_FILE_SIZE_MB} MB each
+            </p>
+          </div>
+        </div>
 
-      <p className="muted">
-        Supported: {formatSupportedSourceFileTypes()}. Maximum{" "}
-        {MAX_SOURCE_FILES} files, {MAX_SOURCE_FILE_SIZE_MB} MB each.
-      </p>
+        {isUploading && (
+          <div className="uploading">
+            <div className="uploadSpinner" />
+            Parsing uploaded files…
+          </div>
+        )}
 
-      {isUploading && <p className="muted">Parsing uploaded files...</p>}
-
-      {uploadedFiles.length > 0 && (
-        <p className="muted">Loaded: {uploadedFiles.join(", ")}</p>
-      )}
-
-      <label className="label">
-        Paste source text
-        <textarea
-          className="textarea"
-          value={sourceText}
-          onChange={(event) => onSourceTextChange(event.target.value)}
-          placeholder="Paste source email, quote, scope, meeting notes, or combined project handover information here..."
-        />
-      </label>
+        {uploadedFiles.length > 0 && (
+          <div className="fileList">
+            {uploadedFiles.map((f) => (
+              <span key={f} className="fileChip">
+                ✓ {f}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
 
       <div className="sourceActions">
         <button
@@ -100,10 +103,10 @@ export function SourcePackPanel({
           disabled={isUploading || isExtracting || !sourceText.trim()}
         >
           {isUploading
-            ? "Parsing files..."
+            ? "Parsing files…"
             : isExtracting
-              ? "Extracting..."
-              : "Auto-fill checklist"}
+              ? "Extracting…"
+              : "✦ Auto-fill checklist"}
         </button>
 
         <button
@@ -111,14 +114,11 @@ export function SourcePackPanel({
           onClick={onExport}
           disabled={!hasResult}
         >
-          Export checklist
+          ↓ Export
         </button>
 
-        <button
-          className="button sourceActionButton resetButton"
-          onClick={onReset}
-        >
-          Reset
+        <button className="button sourceActionButton resetButton" onClick={onReset}>
+          ↺ Reset
         </button>
       </div>
 

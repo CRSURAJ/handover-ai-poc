@@ -15,12 +15,12 @@ export function ChecklistTable({ result }: ChecklistTableProps) {
     <section className="panel wide">
       <div className="panelHeader">
         <div>
-          <h2>4. Autofilled Checklist</h2>
-          <p>
-            This is the checklist table you can later save, approve, export, or
-            connect to your main app.
+          <h2>Autofilled Checklist</h2>
+          <p className="subtle">
+            Review AI suggestions — save, approve, or export once verified.
           </p>
         </div>
+        <div className="panelNum">4</div>
       </div>
 
       <div className="tableWrap">
@@ -28,7 +28,7 @@ export function ChecklistTable({ result }: ChecklistTableProps) {
           <thead>
             <tr>
               <th>Category</th>
-              <th>Item / Checklist</th>
+              <th>Item</th>
               <th>Status</th>
               <th>Comments</th>
               <th>Remarks</th>
@@ -39,17 +39,14 @@ export function ChecklistTable({ result }: ChecklistTableProps) {
           <tbody>
             {result.checklistItems.map((item, index) => (
               <tr key={`${item.category}-${item.itemLabel}-${index}`}>
-                <td>{item.category}</td>
+                <td>
+                  <span className="categoryCell">{item.category}</span>
+                </td>
 
                 <td>
-                  <strong>{item.itemLabel}</strong>
+                  <span className="itemLabel">{item.itemLabel}</span>
                   {criticalItemLabels.has(item.itemLabel) && (
-                    <span
-                      className="badge bad"
-                      style={{ marginLeft: 8, fontSize: 10, verticalAlign: "middle" }}
-                    >
-                      CRITICAL
-                    </span>
+                    <span className="criticalBadge">CRITICAL</span>
                   )}
                 </td>
 
@@ -61,11 +58,11 @@ export function ChecklistTable({ result }: ChecklistTableProps) {
 
                 <td>
                   {item.comments || (
-                    <span className="muted">No comment extracted</span>
+                    <span className="muted">—</span>
                   )}
                 </td>
 
-                <td>{item.remarks}</td>
+                <td>{item.remarks || <span className="muted">—</span>}</td>
 
                 <td className="evidence">{item.evidenceText}</td>
               </tr>

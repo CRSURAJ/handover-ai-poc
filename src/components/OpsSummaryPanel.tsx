@@ -9,9 +9,12 @@ export function OpsSummaryPanel({ result }: OpsSummaryPanelProps) {
     <section className="panel wide">
       <div className="panelHeader">
         <div>
-          <h2>5. Ops Summary</h2>
-          <p>Short operational handover summary generated from the source pack.</p>
+          <h2>Ops Summary</h2>
+          <p className="subtle">
+            Operational handover summary generated from the source pack.
+          </p>
         </div>
+        <div className="panelNum">5</div>
       </div>
 
       <div className="opsSummary">{result.review.opsSummary}</div>

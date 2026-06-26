@@ -1,18 +1,33 @@
-import type { HandoverExtractionResult } from "@/lib/types";
+import type { HandoverExtractionResult, Confidence } from "@/lib/types";
 import { badgeClass, getStatusLabel } from "@/lib/handoverUi";
 
 type HeaderFieldsTableProps = {
   result: HandoverExtractionResult;
 };
 
+function ConfidencePips({ level }: { level: Confidence }) {
+  const filled = level === "high" ? 3 : level === "medium" ? 2 : 1;
+  return (
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+      <span className="confPips">
+        {[1, 2, 3].map((i) => (
+          <span key={i} className={`confPip ${i <= filled ? `on ${level}` : ""}`} />
+        ))}
+      </span>
+      <span className="confLabel">{level}</span>
+    </span>
+  );
+}
+
 export function HeaderFieldsTable({ result }: HeaderFieldsTableProps) {
   return (
     <section className="panel wide">
       <div className="panelHeader">
         <div>
-          <h2>3. Header Fields</h2>
-          <p>Each extracted value keeps evidence and confidence.</p>
+          <h2>Header Fields</h2>
+          <p className="subtle">Each extracted value carries evidence and confidence.</p>
         </div>
+        <div className="panelNum">3</div>
       </div>
 
       <div className="tableWrap">
@@ -31,7 +46,7 @@ export function HeaderFieldsTable({ result }: HeaderFieldsTableProps) {
             {result.headerFields.map((field) => (
               <tr key={field.fieldKey}>
                 <td>
-                  <strong>{field.fieldLabel}</strong>
+                  <span className="itemLabel">{field.fieldLabel}</span>
                 </td>
 
                 <td>
@@ -46,7 +61,9 @@ export function HeaderFieldsTable({ result }: HeaderFieldsTableProps) {
                   </span>
                 </td>
 
-                <td>{field.confidence}</td>
+                <td>
+                  <ConfidencePips level={field.confidence} />
+                </td>
 
                 <td className="evidence">{field.evidenceText}</td>
               </tr>

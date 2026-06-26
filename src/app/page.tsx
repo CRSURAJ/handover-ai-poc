@@ -32,7 +32,6 @@ export default function Home() {
     progress,
     fileInputKey,
     setSourceName,
-    updateSourceText,
     onFilesChange,
     extract,
     resetAll,
@@ -48,61 +47,65 @@ export default function Home() {
   }, [result]);
 
   return (
-    <main className="shell">
-      <section className="hero">
-        <p className="eyebrow">HandoverAI POC</p>
-        <h1>AI Handover Checklist Autofill</h1>
-        <p>
-          Upload or paste Sales handover material, then let AI pre-fill the Ops
-          checklist with evidence, confidence, and review flags.
-        </p>
-      </section>
+    <>
+      <header className="topbar">
+        <div className="topbarMark">HA</div>
+        <span className="topbarName">HandoverAI</span>
+        <span className="topbarPoc">POC</span>
+      </header>
 
-      <div className="layout">
-        <SourcePackPanel
-          sourceName={sourceName}
-          sourceText={sourceText}
-          uploadedFiles={uploadedFiles}
-          isUploading={isUploading}
-          isExtracting={isExtracting}
-          error={error}
-          hasResult={Boolean(result)}
-          fileInputKey={fileInputKey}
-          onSourceNameChange={setSourceName}
-          onSourceTextChange={updateSourceText}
-          onFilesChange={onFilesChange}
-          onExtract={extract}
-          onExport={exportHandoverChecklist}
-          onReset={resetAll}
-        />
+      <main className="shell">
+        <div className="pageIntro">
+          <h1>Handover Checklist Autofill</h1>
+          <p>Upload Sales documents — AI pre-fills the Ops checklist with evidence, confidence scores, and review flags.</p>
+        </div>
 
-        <ReviewSummary result={result} progress={progress} />
-      </div>
+        <div className="layout">
+          <SourcePackPanel
+            sourceName={sourceName}
+            sourceText={sourceText}
+            uploadedFiles={uploadedFiles}
+            isUploading={isUploading}
+            isExtracting={isExtracting}
+            error={error}
+            hasResult={Boolean(result)}
+            fileInputKey={fileInputKey}
+            onSourceNameChange={setSourceName}
+            onFilesChange={onFilesChange}
+            onExtract={extract}
+            onExport={exportHandoverChecklist}
+            onReset={resetAll}
+          />
 
-      {result?.wasTruncated && (
-        <p className="truncationWarning">
-          ⚠ Source too large — only the first 120,000 characters were analysed.
-          Some fields may show as missing because they were in the dropped content.
-          Try splitting your documents into smaller uploads.
-        </p>
-      )}
+          <ReviewSummary result={result} progress={progress} />
+        </div>
 
-      {isExtracting && !result && (
-        <>
-          <SkeletonTable rows={6} />
-          <SkeletonTable rows={12} />
-        </>
-      )}
+        {result?.wasTruncated && (
+          <p className="truncationWarning">
+            ⚠ Source too large — only the first 120,000 characters were
+            analysed. Some fields may show as missing because they were in the
+            dropped content. Try splitting your documents into smaller uploads.
+          </p>
+        )}
 
-      <div ref={resultsRef}>
-        {result && (
+        {isExtracting && !result && (
           <>
-            <HeaderFieldsTable result={result} />
-            <ChecklistTable result={result} />
-            <OpsSummaryPanel result={result} />
+            <SkeletonTable rows={6} />
+            <SkeletonTable rows={12} />
           </>
         )}
-      </div>
-    </main>
+
+        <div ref={resultsRef}>
+          {result && (
+            <>
+              <p className="sectionLabel">Extracted Results</p>
+              <HeaderFieldsTable result={result} />
+              <ChecklistTable result={result} />
+              <OpsSummaryPanel result={result} />
+            </>
+          )}
+        </div>
+      </main>
+    </>
   );
 }
