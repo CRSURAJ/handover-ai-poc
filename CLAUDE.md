@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-The app is AI-only. There is no offline/local fallback extractor.
+The app is AI-only. There is no offline/local extractor.
 
 HandoverAI POC — a Next.js web app that auto-fills a sales-to-operations handover checklist by extracting structured data from uploaded source documents (PDFs, DOCX, XLSX, EML, TXT, etc.) using the OpenAI API. All extractions include evidence, confidence, and status so humans can review before accepting.
 
