@@ -60,13 +60,14 @@ function getApiErrorDetail(payload: unknown) {
 export async function extractHandoverChecklist(params: {
   sourceName: string;
   sourceText: string;
+  signal?: AbortSignal;
 }): Promise<HandoverExtractionResult> {
+  const { signal, ...bodyParams } = params;
   const response = await fetch("/api/extract", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(params),
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(bodyParams),
+    signal,
   });
 
   const data = await readJson(response);

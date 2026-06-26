@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
 import {
   extractHandoverChecklist,
@@ -14,17 +14,20 @@ import { downloadTextFile, makeFileName } from "@/lib/handoverUi";
 import { getHandoverProgress } from "@/lib/handoverProgress";
 import type { HandoverExtractionResult } from "@/lib/types";
 
-const initialSourceText = "";
+// Abort extraction after 90 seconds to prevent the UI hanging indefinitely.
+const EXTRACTION_TIMEOUT_MS = 90_000;
 
 export function useHandoverExtraction() {
   const [sourceName, setSourceName] = useState("");
-  const [sourceText, setSourceText] = useState(initialSourceText);
+  const [sourceText, setSourceText] = useState("");
   const [result, setResult] = useState<HandoverExtractionResult | null>(null);
   const [isExtracting, setIsExtracting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [fileInputKey, setFileInputKey] = useState(0);
+
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const progress = useMemo(() => getHandoverProgress(result), [result]);
 
@@ -34,6 +37,15 @@ export function useHandoverExtraction() {
   }
 
   async function extract() {
+    abortControllerRef.current?.abort();
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
+    const timeoutId = setTimeout(
+      () => controller.abort(),
+      EXTRACTION_TIMEOUT_MS,
+    );
+
     setIsExtracting(true);
     setError(null);
     setResult(null);
@@ -42,13 +54,22 @@ export function useHandoverExtraction() {
       const extractionResult = await extractHandoverChecklist({
         sourceName,
         sourceText,
+        signal: controller.signal,
       });
 
       setResult(extractionResult);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Extraction failed");
+      if (err instanceof Error && err.name === "AbortError") {
+        setError(
+          "Extraction timed out after 90 seconds. Try reducing the amount of source material.",
+        );
+      } else {
+        setError(err instanceof Error ? err.message : "Extraction failed");
+      }
     } finally {
+      clearTimeout(timeoutId);
       setIsExtracting(false);
+      abortControllerRef.current = null;
     }
   }
 
@@ -75,6 +96,17 @@ export function useHandoverExtraction() {
   }
 
   function resetAll() {
+    if (
+      !window.confirm(
+        "Clear all source material and results? This cannot be undone.",
+      )
+    ) {
+      return;
+    }
+
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = null;
+
     setSourceName("");
     setSourceText("");
     setResult(null);
@@ -82,7 +114,6 @@ export function useHandoverExtraction() {
     setIsUploading(false);
     setUploadedFiles([]);
     setError(null);
-
     setFileInputKey((current) => current + 1);
   }
 

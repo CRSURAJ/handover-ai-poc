@@ -1,9 +1,14 @@
+import { CHECKLIST_ITEMS } from "@/lib/template";
 import type { HandoverExtractionResult } from "@/lib/types";
 import { badgeClass, getStatusLabel } from "@/lib/handoverUi";
 
 type ChecklistTableProps = {
   result: HandoverExtractionResult;
 };
+
+const criticalItemLabels = new Set<string>(
+  CHECKLIST_ITEMS.filter((i) => i.critical).map((i) => i.itemLabel),
+);
 
 export function ChecklistTable({ result }: ChecklistTableProps) {
   return (
@@ -32,12 +37,20 @@ export function ChecklistTable({ result }: ChecklistTableProps) {
           </thead>
 
           <tbody>
-            {result.checklistItems.map((item) => (
-              <tr key={`${item.category}-${item.itemLabel}`}>
+            {result.checklistItems.map((item, index) => (
+              <tr key={`${item.category}-${item.itemLabel}-${index}`}>
                 <td>{item.category}</td>
 
                 <td>
                   <strong>{item.itemLabel}</strong>
+                  {criticalItemLabels.has(item.itemLabel) && (
+                    <span
+                      className="badge bad"
+                      style={{ marginLeft: 8, fontSize: 10, verticalAlign: "middle" }}
+                    >
+                      CRITICAL
+                    </span>
+                  )}
                 </td>
 
                 <td>

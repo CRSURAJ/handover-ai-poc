@@ -1,11 +1,24 @@
 "use client";
 
+import { useEffect, useRef } from "react";
+
 import { ChecklistTable } from "@/components/ChecklistTable";
 import { HeaderFieldsTable } from "@/components/HeaderFieldsTable";
 import { OpsSummaryPanel } from "@/components/OpsSummaryPanel";
 import { ReviewSummary } from "@/components/ReviewSummary";
 import { SourcePackPanel } from "@/components/SourcePackPanel";
 import { useHandoverExtraction } from "@/hooks/useHandoverExtraction";
+
+function SkeletonTable({ rows }: { rows: number }) {
+  return (
+    <section className="panel wide skeletonPanel">
+      <div className="skeletonTitle" />
+      {Array.from({ length: rows }, (_, i) => (
+        <div key={i} className="skeletonRow" />
+      ))}
+    </section>
+  );
+}
 
 export default function Home() {
   const {
@@ -26,8 +39,16 @@ export default function Home() {
     exportHandoverChecklist,
   } = useHandoverExtraction();
 
+  const resultsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (result && resultsRef.current) {
+      resultsRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [result]);
+
   return (
-    <main>
+    <main className="shell">
       <section className="hero">
         <p className="eyebrow">HandoverAI POC</p>
         <h1>AI Handover Checklist Autofill</h1>
@@ -58,13 +79,30 @@ export default function Home() {
         <ReviewSummary result={result} progress={progress} />
       </div>
 
-      {result && (
+      {result?.wasTruncated && (
+        <p className="truncationWarning">
+          ⚠ Source too large — only the first 120,000 characters were analysed.
+          Some fields may show as missing because they were in the dropped content.
+          Try splitting your documents into smaller uploads.
+        </p>
+      )}
+
+      {isExtracting && !result && (
         <>
-          <HeaderFieldsTable result={result} />
-          <ChecklistTable result={result} />
-          <OpsSummaryPanel result={result} />
+          <SkeletonTable rows={6} />
+          <SkeletonTable rows={12} />
         </>
       )}
+
+      <div ref={resultsRef}>
+        {result && (
+          <>
+            <HeaderFieldsTable result={result} />
+            <ChecklistTable result={result} />
+            <OpsSummaryPanel result={result} />
+          </>
+        )}
+      </div>
     </main>
   );
 }

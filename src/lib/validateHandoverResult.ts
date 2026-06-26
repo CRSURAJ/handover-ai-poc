@@ -111,6 +111,13 @@ function validateHeaderFields(value: unknown) {
     requireString(field, "sourceName", path);
     requireString(field, "evidenceText", path);
     requireString(field, "reasoningNote", path);
+
+    // Cross-field: "filled" status must have non-empty evidence.
+    if (field.status === "filled" && !(field.evidenceText as string).trim()) {
+      throw new Error(
+        `${path}.evidenceText must not be empty when status is "filled".`,
+      );
+    }
   });
 }
 

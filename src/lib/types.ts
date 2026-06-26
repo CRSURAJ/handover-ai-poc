@@ -57,4 +57,6 @@ export type HandoverExtractionResult = {
   headerFields: HeaderFieldExtraction[];
   checklistItems: ChecklistItemExtraction[];
   review: HandoverExtractionReview;
+  /** True when sourceText exceeded the 120K-char prompt limit and was silently truncated. */
+  wasTruncated?: boolean;
 };

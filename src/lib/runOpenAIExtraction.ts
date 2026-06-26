@@ -1,6 +1,6 @@
 import OpenAI from "openai";
 
-import { buildExtractionPrompt } from "@/lib/buildExtractionPrompt";
+import { buildExtractionPrompt, MAX_SOURCE_CHARS } from "@/lib/buildExtractionPrompt";
 import { extractionJsonSchema } from "@/lib/schema";
 import type { HandoverExtractionResult } from "@/lib/types";
 import { parseHandoverExtractionResult } from "@/lib/validateHandoverResult";
@@ -21,13 +21,13 @@ function getOpenAIClient() {
 
   if (!apiKey) {
     throw new ExtractionApiError(
-      "OpenAI API key is not configured.",
+      "AI extraction service is not configured.",
       500,
-      "Add OPENAI_API_KEY to .env.local. This app is AI-only.",
     );
   }
 
-  return new OpenAI({ apiKey });
+  // maxRetries: 2 retries on transient failures (rate limits, timeouts).
+  return new OpenAI({ apiKey, maxRetries: 2 });
 }
 
 function parseExtractionOutput(outputText: string): HandoverExtractionResult {
@@ -52,7 +52,8 @@ export async function runOpenAIExtraction(
   sourceText: string,
 ): Promise<HandoverExtractionResult> {
   const client = getOpenAIClient();
-  const model = process.env.OPENAI_MODEL || "gpt-4.1-mini";
+  const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
+  const wasTruncated = sourceText.length > MAX_SOURCE_CHARS;
 
   const response = await client.responses.create({
     model,
@@ -75,5 +76,6 @@ export async function runOpenAIExtraction(
     );
   }
 
-  return parseExtractionOutput(response.output_text);
+  const result = parseExtractionOutput(response.output_text);
+  return { ...result, wasTruncated };
 }
