@@ -1,3 +1,10 @@
+import {
+  formatSupportedSourceFileTypes,
+  MAX_SOURCE_FILE_SIZE_MB,
+  MAX_SOURCE_FILES,
+  SOURCE_FILE_ACCEPT,
+} from "@/lib/sourceFileConfig";
+
 type SourcePackPanelProps = {
   sourceName: string;
   sourceText: string;
@@ -60,10 +67,15 @@ export function SourcePackPanel({
           className="input file"
           type="file"
           multiple
-          accept=".txt,.eml,.csv,.md,.pdf,.docx,.xlsx,.xls,.html,.htm"
+          accept={SOURCE_FILE_ACCEPT}
           onChange={(event) => onFilesChange(event.target.files)}
         />
       </label>
+
+      <p className="muted">
+        Supported: {formatSupportedSourceFileTypes()}. Maximum{" "}
+        {MAX_SOURCE_FILES} files, {MAX_SOURCE_FILE_SIZE_MB} MB each.
+      </p>
 
       {isUploading && <p className="muted">Parsing uploaded files...</p>}
 

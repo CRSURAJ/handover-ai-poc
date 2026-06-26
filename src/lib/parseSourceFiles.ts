@@ -1,7 +1,9 @@
 import { extractBufferText } from "@/lib/extractFileText";
-
-export const MAX_SOURCE_FILES = 10;
-export const MAX_SOURCE_FILE_SIZE_BYTES = 20 * 1024 * 1024;
+import {
+  MAX_SOURCE_FILE_SIZE_BYTES,
+  MAX_SOURCE_FILE_SIZE_MB,
+  MAX_SOURCE_FILES,
+} from "@/lib/sourceFileConfig";
 
 export type ParsedSourceFile = Awaited<ReturnType<typeof extractBufferText>>;
 
@@ -47,7 +49,7 @@ export function validateSourceFiles(files: File[]) {
     throw new SourceParsingApiError(
       "Uploaded file is too large.",
       400,
-      `${oversizedFile.name} is larger than 20 MB.`,
+      `${oversizedFile.name} is larger than ${MAX_SOURCE_FILE_SIZE_MB} MB.`,
     );
   }
 }
