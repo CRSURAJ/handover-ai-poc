@@ -14,7 +14,6 @@ export function OpsSummaryPanel({ result }: OpsSummaryPanelProps) {
             Operational handover summary generated from the source pack.
           </p>
         </div>
-        <div className="panelNum">5</div>
       </div>
 
       <div className="opsSummary">{result.review.opsSummary}</div>

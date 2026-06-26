@@ -48,19 +48,14 @@ export default function Home() {
 
   return (
     <>
-      <header className="topbar">
-        <div className="topbarMark">HA</div>
-        <span className="topbarName">HandoverAI</span>
-        <span className="topbarPoc">POC</span>
-      </header>
-
       <main className="shell">
-        <div className="pageIntro">
-          <h1>Handover Checklist Autofill</h1>
-          <p>Upload Sales documents — AI pre-fills the Ops checklist with evidence, confidence scores, and review flags.</p>
-        </div>
+        <div className="outerCard">
+          <div className="appHeader">
+            <div className="appLogo">
+              <span className="appLogoAH">Advisory Handover Checklist</span>
+            </div>
+          </div>
 
-        <div className="layout">
           <SourcePackPanel
             sourceName={sourceName}
             sourceText={sourceText}
@@ -78,7 +73,6 @@ export default function Home() {
           />
 
           <ReviewSummary result={result} progress={progress} />
-        </div>
 
         {result?.wasTruncated && (
           <p className="truncationWarning">
@@ -98,13 +92,18 @@ export default function Home() {
         <div ref={resultsRef}>
           {result && (
             <>
-              <p className="sectionLabel">Extracted Results</p>
-              <HeaderFieldsTable result={result} />
-              <ChecklistTable result={result} />
+              <section className="panel wide">
+                <div className="panelHeader">
+                  <div><h2>Advisory Handover Checklist</h2></div>
+                </div>
+                <HeaderFieldsTable result={result} />
+                <ChecklistTable result={result} />
+              </section>
               <OpsSummaryPanel result={result} />
             </>
           )}
         </div>
+        </div>{/* outerCard */}
       </main>
     </>
   );

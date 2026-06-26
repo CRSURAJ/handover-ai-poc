@@ -43,7 +43,6 @@ export function SourcePackPanel({
           <h2>Source Pack</h2>
           <p className="subtle">Upload source documents to auto-fill the checklist.</p>
         </div>
-        <div className="panelNum">1</div>
       </div>
 
       <div className="fieldGroup">

@@ -13,9 +13,7 @@ export function ReviewSummary({ result, progress }: ReviewSummaryProps) {
       <div className="panelHeader">
         <div>
           <h2>Review Summary</h2>
-          <p className="subtle">AI assists — humans approve. Review before accepting.</p>
         </div>
-        <div className="panelNum">2</div>
       </div>
 
       {!result ? (
@@ -58,35 +56,41 @@ export function ReviewSummary({ result, progress }: ReviewSummaryProps) {
             </div>
           </div>
 
-          <div>
-            <h3>Executive Summary</h3>
-            <p className="subtle">{result.review.executiveSummary}</p>
-          </div>
-
-          <div>
-            <h3>TBC / Review Items</h3>
-            {result.review.tbcItems.length === 0 ? (
-              <p className="muted">None found.</p>
-            ) : (
-              <ul>
-                {result.review.tbcItems.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-            )}
-          </div>
-
-          <div>
-            <h3>Suggested Actions</h3>
-            {result.review.suggestedActions.length === 0 ? (
-              <p className="muted">None found.</p>
-            ) : (
-              <ul>
-                {result.review.suggestedActions.map((action) => (
-                  <li key={action}>{action}</li>
-                ))}
-              </ul>
-            )}
+          <div className="tableWrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>TBC / Review Items</th>
+                  <th>Suggested Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style={{ verticalAlign: "top" }}>
+                    {result.review.tbcItems.length === 0 ? (
+                      <span className="muted">None found.</span>
+                    ) : (
+                      <ul style={{ margin: 0, paddingLeft: 16 }}>
+                        {result.review.tbcItems.map((item) => (
+                          <li key={item} style={{ marginBottom: 8, fontSize: 15 }}>{item}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </td>
+                  <td style={{ verticalAlign: "top" }}>
+                    {result.review.suggestedActions.length === 0 ? (
+                      <span className="muted">None found.</span>
+                    ) : (
+                      <ul style={{ margin: 0, paddingLeft: 16 }}>
+                        {result.review.suggestedActions.map((action) => (
+                          <li key={action} style={{ marginBottom: 8, fontSize: 15 }}>{action}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       )}

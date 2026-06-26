@@ -21,21 +21,12 @@ function ConfidencePips({ level }: { level: Confidence }) {
 
 export function HeaderFieldsTable({ result }: HeaderFieldsTableProps) {
   return (
-    <section className="panel wide">
-      <div className="panelHeader">
-        <div>
-          <h2>Header Fields</h2>
-          <p className="subtle">Each extracted value carries evidence and confidence.</p>
-        </div>
-        <div className="panelNum">3</div>
-      </div>
-
-      <div className="tableWrap">
+    <div className="tableWrap">
         <table>
           <thead>
             <tr>
               <th>Field</th>
-              <th>Extracted Value</th>
+              <th>Description</th>
               <th>Status</th>
               <th>Confidence</th>
               <th>Evidence</th>
@@ -71,6 +62,5 @@ export function HeaderFieldsTable({ result }: HeaderFieldsTableProps) {
           </tbody>
         </table>
       </div>
-    </section>
   );
 }
