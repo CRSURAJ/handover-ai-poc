@@ -1,38 +1,49 @@
 import { NextRequest, NextResponse } from "next/server";
-import { extractBufferText } from "@/lib/extractFileText";
+
+import {
+  buildCombinedSourceText,
+  getUploadedSourceFiles,
+  parseUploadedSourceFiles,
+  SourceParsingApiError,
+  validateSourceFiles,
+} from "@/lib/parseSourceFiles";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
+function errorResponse(error: unknown) {
+  if (error instanceof SourceParsingApiError) {
+    return NextResponse.json(
+      {
+        error: error.message,
+        detail: error.detail,
+      },
+      { status: error.status },
+    );
+  }
+
+  return NextResponse.json(
+    {
+      error: "File upload parsing failed.",
+      detail: error instanceof Error ? error.message : String(error),
+    },
+    { status: 500 },
+  );
+}
+
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
-    const files = formData.getAll("files").filter((item): item is File => item instanceof File);
+    const files = getUploadedSourceFiles(formData);
 
-    if (!files.length) {
-      return NextResponse.json({ error: "No files uploaded." }, { status: 400 });
-    }
+    validateSourceFiles(files);
 
-    const parsed = [];
-
-    for (const file of files) {
-      const arrayBuffer = await file.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-      const result = await extractBufferText(buffer, file.name, file.type);
-      parsed.push(result);
-    }
-
-    const combinedText = parsed
-      .map((source) => {
-        const warning = source.warning ? `\nWarning: ${source.warning}` : "";
-        return `SOURCE FILE: ${source.fileName}\nTYPE: ${source.fileType}${warning}\n---\n${source.extractedText}`;
-      })
-      .join("\n\n==============================\n\n")
-      .trim();
+    const parsed = await parseUploadedSourceFiles(files);
+    const combinedText = buildCombinedSourceText(parsed);
 
     return NextResponse.json({ parsed, combinedText });
   } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: "File upload parsing failed." }, { status: 500 });
+    console.error("File upload parsing failed:", error);
+    return errorResponse(error);
   }
 }
