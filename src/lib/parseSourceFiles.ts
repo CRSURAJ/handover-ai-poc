@@ -1,5 +1,7 @@
 import { extractBufferText } from "@/lib/extractFileText";
 import {
+  formatSupportedSourceFileTypes,
+  isSupportedSourceFileName,
   MAX_SOURCE_FILE_SIZE_BYTES,
   MAX_SOURCE_FILE_SIZE_MB,
   MAX_SOURCE_FILES,
@@ -38,6 +40,18 @@ export function validateSourceFiles(files: File[]) {
       "Too many files uploaded.",
       400,
       `Upload ${MAX_SOURCE_FILES} files or fewer at one time.`,
+    );
+  }
+
+  const unsupportedFile = files.find(
+    (file) => !isSupportedSourceFileName(file.name),
+  );
+
+  if (unsupportedFile) {
+    throw new SourceParsingApiError(
+      "Unsupported file type.",
+      400,
+      `${unsupportedFile.name} is not supported. Supported file types: ${formatSupportedSourceFileTypes()}.`,
     );
   }
 
