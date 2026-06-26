@@ -11,6 +11,7 @@ import {
   getHandoverProjectName,
 } from "@/lib/exportHandoverHtml";
 import { downloadTextFile, makeFileName } from "@/lib/handoverUi";
+import { getHandoverProgress } from "@/lib/handoverProgress";
 import type { HandoverExtractionResult } from "@/lib/types";
 
 const initialSourceText = "";
@@ -25,20 +26,7 @@ export function useHandoverExtraction() {
   const [error, setError] = useState<string | null>(null);
   const [fileInputKey, setFileInputKey] = useState(0);
 
-  const progress = useMemo(() => {
-    if (!result) return null;
-
-    const total = result.checklistItems.length;
-    const complete = result.checklistItems.filter(
-      (item) => item.suggestedStatus === "complete",
-    ).length;
-
-    return {
-      total,
-      complete,
-      percent: total > 0 ? Math.round((complete / total) * 100) : 0,
-    };
-  }, [result]);
+  const progress = useMemo(() => getHandoverProgress(result), [result]);
 
   function updateSourceText(value: string) {
     setSourceText(value);

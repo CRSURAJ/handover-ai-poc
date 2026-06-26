@@ -1,11 +1,7 @@
 import type { HandoverExtractionResult } from "@/lib/types";
+import type { ChecklistProgress } from "@/lib/handoverProgress";
 import { badgeClass, statusLabels } from "@/lib/handoverUi";
 
-type ChecklistProgress = {
-  total: number;
-  complete: number;
-  percent: number;
-};
 
 type ReviewSummaryProps = {
   result: HandoverExtractionResult | null;

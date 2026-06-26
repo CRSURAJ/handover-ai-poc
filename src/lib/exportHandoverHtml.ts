@@ -1,11 +1,7 @@
 import type { HandoverExtractionResult } from "@/lib/types";
+import type { ChecklistProgress } from "@/lib/handoverProgress";
 import { escapeHtml, statusLabels } from "@/lib/handoverUi";
 
-type ChecklistProgress = {
-  total: number;
-  complete: number;
-  percent: number;
-};
 
 type BuildHandoverHtmlArgs = {
   result: HandoverExtractionResult;
