@@ -1,4 +1,9 @@
-export type FieldStatus = "filled" | "missing" | "needs_review" | "conflict";
+export type FieldStatus =
+  | "filled"
+  | "missing"
+  | "needs_review"
+  | "conflict";
+
 export type Confidence = "high" | "medium" | "low";
 
 export type ChecklistStatus =
@@ -34,20 +39,22 @@ export type ChecklistItemExtraction = {
   reasoningNote: string;
 };
 
+export type HandoverExtractionReview = {
+  overallStatus: "ok" | "requires_review" | "critical";
+  riskLevel: "low" | "medium" | "high" | "critical";
+  executiveSummary: string;
+  tbcItems: string[];
+  missingItems: string[];
+  riskFlags: string[];
+  suggestedActions: string[];
+  opsSummary: string;
+};
+
 export type HandoverExtractionResult = {
   templateName: string;
   templateRevision: string;
   extractionMode: "ai";
   headerFields: HeaderFieldExtraction[];
   checklistItems: ChecklistItemExtraction[];
-  review: {
-    overallStatus: "ok" | "requires_review" | "critical";
-    riskLevel: "low" | "medium" | "high" | "critical";
-    executiveSummary: string;
-    tbcItems: string[];
-    missingItems: string[];
-    riskFlags: string[];
-    suggestedActions: string[];
-    opsSummary: string;
-  };
+  review: HandoverExtractionReview;
 };
