@@ -16,8 +16,8 @@ This is intentionally independent from AHlogu.
 
 - Next.js App Router
 - TypeScript
-- OpenAI Responses API with Structured Outputs when `OPENAI_API_KEY` is supplied
-- Local demo extractor fallback when no API key is supplied
+- OpenAI Responses API with Structured Outputs
+- 
 
 ## Run locally
 
@@ -42,7 +42,7 @@ OPENAI_API_KEY=your_key_here
 OPENAI_MODEL=gpt-4.1-mini
 ```
 
-Without `OPENAI_API_KEY`, the app still runs using the local rule-based demo extractor.
+This app requires `OPENAI_API_KEY`. There is no offline/local extractor.
 
 ## What the POC currently supports
 
@@ -115,9 +115,9 @@ src/app/page.tsx                 UI
 src/app/api/extract/route.ts     extraction API
 src/lib/template.ts              checklist template definition
 src/lib/schema.ts                structured output JSON schema
-src/lib/localExtractor.ts        fallback demo extractor
+
 src/lib/types.ts                 shared TypeScript types
-samples/sonac-handover-source.txt sample input
+
 ```
 
 ## Important design rule

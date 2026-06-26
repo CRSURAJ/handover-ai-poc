@@ -37,7 +37,7 @@ export type ChecklistItemExtraction = {
 export type HandoverExtractionResult = {
   templateName: string;
   templateRevision: string;
-  extractionMode: "ai" | "local_demo";
+  extractionMode: "ai";
   headerFields: HeaderFieldExtraction[];
   checklistItems: ChecklistItemExtraction[];
   review: {

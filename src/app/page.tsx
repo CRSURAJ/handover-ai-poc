@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import type { HandoverExtractionResult } from "@/lib/types";
 
-const sampleText = `Description`;
+const initialSourceText = "";
 
 const statusLabels: Record<string, string> = {
   filled: "Filled",
@@ -83,7 +83,7 @@ function downloadTextFile(fileName: string, content: string, mimeType: string) {
 
 export default function Home() {
   const [sourceName, setSourceName] = useState("");
-  const [sourceText, setSourceText] = useState(sampleText);
+  const [sourceText, setSourceText] = useState(initialSourceText);
   const [result, setResult] = useState<HandoverExtractionResult | null>(null);
   const [isExtracting, setIsExtracting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -166,8 +166,8 @@ export default function Home() {
   }
 
   function resetAll() {
-    setSourceName("sonac-handover-source.txt");
-    setSourceText(sampleText);
+    setSourceName("");
+    setSourceText("");
     setResult(null);
     setIsExtracting(false);
     setIsUploading(false);
@@ -365,9 +365,6 @@ export default function Home() {
     <strong>Template:</strong> ${escapeHtml(result.templateName)} — Rev ${escapeHtml(result.templateRevision)}<br />
     <strong>Source Pack:</strong> ${escapeHtml(sourceName)}<br />
     <strong>Exported:</strong> ${escapeHtml(new Date().toLocaleString())}<br />
-    <strong>Extraction Mode:</strong> ${escapeHtml(
-      result.extractionMode === "ai" ? "AI" : "Local demo",
-    )}
   </div>
 
   <h2>Review Summary</h2>
@@ -387,7 +384,6 @@ export default function Home() {
     </div>
     <div class="metric">
       <span>Mode</span>
-      <strong>${escapeHtml(result.extractionMode === "ai" ? "AI" : "Local demo")}</strong>
     </div>
   </div>
 
@@ -588,13 +584,6 @@ export default function Home() {
                   <span>Progress</span>
                   <strong>
                     {progress?.complete}/{progress?.total}
-                  </strong>
-                </div>
-
-                <div className="metric">
-                  <span>Mode</span>
-                  <strong>
-                    {result.extractionMode === "ai" ? "AI" : "Local demo"}
                   </strong>
                 </div>
               </div>

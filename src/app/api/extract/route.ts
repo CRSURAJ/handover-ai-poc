@@ -53,7 +53,7 @@ async function runOpenAIExtraction(
   sourceText: string,
 ): Promise<HandoverExtractionResult> {
   if (!process.env.OPENAI_API_KEY) {
-    throw new Error("OPENAI_API_KEY is missing in .env.local");
+    throw new Error("OPENAI_API_KEY is required. This app is AI-only.");
   }
 
   const client = new OpenAI({
