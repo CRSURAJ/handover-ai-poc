@@ -43,19 +43,21 @@ export function SourcePackPanel({
         </div>
       </div>
 
-      <label>
+      <label className="label">
         Source name
         <input
+          className="input"
           value={sourceName}
           onChange={(event) => onSourceNameChange(event.target.value)}
           placeholder="Example: Project quote, sales handover email, meeting notes"
         />
       </label>
 
-      <label>
+      <label className="label">
         Upload source files
         <input
           key={fileInputKey}
+          className="input file"
           type="file"
           multiple
           accept=".txt,.eml,.csv,.md,.pdf,.docx,.xlsx,.xls,.html,.htm"
@@ -69,9 +71,10 @@ export function SourcePackPanel({
         <p className="muted">Loaded: {uploadedFiles.join(", ")}</p>
       )}
 
-      <label>
+      <label className="label">
         Paste source text
         <textarea
+          className="textarea"
           value={sourceText}
           onChange={(event) => onSourceTextChange(event.target.value)}
           placeholder="Paste source email, quote, scope, meeting notes, or combined project handover information here..."
