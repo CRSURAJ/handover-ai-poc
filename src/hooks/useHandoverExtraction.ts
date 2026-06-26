@@ -3,6 +3,10 @@
 import { useMemo, useState } from "react";
 
 import {
+  extractHandoverChecklist,
+  parseSourceFiles,
+} from "@/lib/handoverApiClient";
+import {
   buildHandoverHtml,
   getHandoverProjectName,
 } from "@/lib/exportHandoverHtml";
@@ -10,32 +14,6 @@ import { downloadTextFile, makeFileName } from "@/lib/handoverUi";
 import type { HandoverExtractionResult } from "@/lib/types";
 
 const initialSourceText = "";
-
-async function getResponseJson(response: Response) {
-  try {
-    return await response.json();
-  } catch {
-    return {};
-  }
-}
-
-function getApiErrorMessage(data: unknown, fallback: string) {
-  if (!data || typeof data !== "object") {
-    return fallback;
-  }
-
-  const payload = data as { error?: unknown; detail?: unknown };
-
-  if (typeof payload.error === "string" && payload.error.trim()) {
-    return payload.error;
-  }
-
-  if (typeof payload.detail === "string" && payload.detail.trim()) {
-    return payload.detail;
-  }
-
-  return fallback;
-}
 
 export function useHandoverExtraction() {
   const [sourceName, setSourceName] = useState("");
@@ -72,21 +50,12 @@ export function useHandoverExtraction() {
     setResult(null);
 
     try {
-      const response = await fetch("/api/extract", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ sourceName, sourceText }),
+      const extractionResult = await extractHandoverChecklist({
+        sourceName,
+        sourceText,
       });
 
-      const data = await getResponseJson(response);
-
-      if (!response.ok) {
-        throw new Error(getApiErrorMessage(data, "Extraction failed"));
-      }
-
-      setResult(data as HandoverExtractionResult);
+      setResult(extractionResult);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Extraction failed");
     } finally {
@@ -101,30 +70,13 @@ export function useHandoverExtraction() {
     setError(null);
 
     try {
-      const formData = new FormData();
-
-      Array.from(files).forEach((file) => formData.append("files", file));
-
-      const response = await fetch("/api/parse-sources", {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await getResponseJson(response);
-
-      if (!response.ok) {
-        throw new Error(getApiErrorMessage(data, "File parsing failed"));
-      }
-
-      const names = Array.from(files).map((file) => file.name);
-      const combinedText =
-        data && typeof data === "object" && "combinedText" in data
-          ? String((data as { combinedText?: unknown }).combinedText || "")
-          : "";
+      const fileList = Array.from(files);
+      const parsed = await parseSourceFiles(fileList);
+      const names = fileList.map((file) => file.name);
 
       setUploadedFiles(names);
       setSourceName(names.join(", "));
-      setSourceText(combinedText);
+      setSourceText(parsed.combinedText);
       setResult(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "File parsing failed");
