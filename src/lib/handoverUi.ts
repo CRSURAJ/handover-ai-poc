@@ -1,4 +1,21 @@
-export const statusLabels: Record<string, string> = {
+import type {
+  ChecklistStatus,
+  Confidence,
+  FieldStatus,
+  HandoverExtractionResult,
+} from "@/lib/types";
+
+type ReviewStatus = HandoverExtractionResult["review"]["overallStatus"];
+type RiskLevel = HandoverExtractionResult["review"]["riskLevel"];
+
+export type StatusValue =
+  | FieldStatus
+  | ChecklistStatus
+  | Confidence
+  | ReviewStatus
+  | RiskLevel;
+
+export const statusLabels: Record<StatusValue, string> = {
   filled: "Filled",
   missing: "Missing",
   needs_review: "Needs review",
@@ -17,25 +34,38 @@ export const statusLabels: Record<string, string> = {
   critical: "Critical",
 };
 
-export function badgeClass(value: string) {
-  if (["filled", "complete", "ok", "low"].includes(value)) {
+const goodStatuses = new Set<StatusValue>(["filled", "complete", "ok", "low"]);
+
+const warningStatuses = new Set<StatusValue>([
+  "needs_review",
+  "pending",
+  "tbc",
+  "requires_review",
+  "medium",
+  "high",
+]);
+
+const badStatuses = new Set<StatusValue>([
+  "missing",
+  "conflict",
+  "critical_issue",
+  "critical",
+]);
+
+export function getStatusLabel(value: StatusValue) {
+  return statusLabels[value];
+}
+
+export function badgeClass(value: StatusValue) {
+  if (goodStatuses.has(value)) {
     return "badge good";
   }
 
-  if (
-    [
-      "needs_review",
-      "pending",
-      "tbc",
-      "requires_review",
-      "medium",
-      "high",
-    ].includes(value)
-  ) {
+  if (warningStatuses.has(value)) {
     return "badge warn";
   }
 
-  if (["missing", "conflict", "critical_issue", "critical"].includes(value)) {
+  if (badStatuses.has(value)) {
     return "badge bad";
   }
 

@@ -1,6 +1,6 @@
 import type { HandoverExtractionResult } from "@/lib/types";
 import type { ChecklistProgress } from "@/lib/handoverProgress";
-import { escapeHtml, statusLabels } from "@/lib/handoverUi";
+import { escapeHtml, getStatusLabel } from "@/lib/handoverUi";
 
 
 type BuildHandoverHtmlArgs = {
@@ -46,7 +46,7 @@ export function buildHandoverHtml({
         <tr>
           <td>${escapeHtml(field.fieldLabel)}</td>
           <td>${escapeHtml(field.extractedValue || "Not found")}</td>
-          <td>${escapeHtml(statusLabels[field.status] || field.status)}</td>
+          <td>${escapeHtml(getStatusLabel(field.status))}</td>
           <td>${escapeHtml(field.confidence)}</td>
           <td>${escapeHtml(field.evidenceText)}</td>
         </tr>
@@ -61,7 +61,7 @@ export function buildHandoverHtml({
           <td>${escapeHtml(item.category)}</td>
           <td>${escapeHtml(item.itemLabel)}</td>
           <td>${escapeHtml(
-            statusLabels[item.suggestedStatus] || item.suggestedStatus,
+            getStatusLabel(item.suggestedStatus),
           )}</td>
           <td>${escapeHtml(item.comments || "")}</td>
           <td>${escapeHtml(item.remarks || "")}</td>
@@ -140,7 +140,7 @@ export function buildHandoverHtml({
 
   <div class="summary">
     <p><strong>Status:</strong> ${escapeHtml(
-      statusLabels[result.review.overallStatus] || result.review.overallStatus,
+      getStatusLabel(result.review.overallStatus),
     )}</p>
     <p><strong>Risk:</strong> ${escapeHtml(result.review.riskLevel.toUpperCase())}</p>
     <p><strong>Progress:</strong> ${escapeHtml(`${progress?.complete ?? 0}/${progress?.total ?? 0}`)}</p>

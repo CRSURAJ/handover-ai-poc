@@ -1,5 +1,5 @@
 import type { HandoverExtractionResult } from "@/lib/types";
-import { badgeClass, statusLabels } from "@/lib/handoverUi";
+import { badgeClass, getStatusLabel } from "@/lib/handoverUi";
 
 type ChecklistTableProps = {
   result: HandoverExtractionResult;
@@ -42,8 +42,7 @@ export function ChecklistTable({ result }: ChecklistTableProps) {
 
                 <td>
                   <span className={badgeClass(item.suggestedStatus)}>
-                    {statusLabels[item.suggestedStatus] ||
-                      item.suggestedStatus}
+                    {getStatusLabel(item.suggestedStatus)}
                   </span>
                 </td>
 

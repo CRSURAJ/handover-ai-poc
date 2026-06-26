@@ -1,6 +1,6 @@
 import type { HandoverExtractionResult } from "@/lib/types";
 import type { ChecklistProgress } from "@/lib/handoverProgress";
-import { badgeClass, statusLabels } from "@/lib/handoverUi";
+import { badgeClass, getStatusLabel } from "@/lib/handoverUi";
 
 
 type ReviewSummaryProps = {
@@ -31,8 +31,7 @@ export function ReviewSummary({ result, progress }: ReviewSummaryProps) {
             <div className="metric">
               <span>Status</span>
               <strong className={badgeClass(result.review.overallStatus)}>
-                {statusLabels[result.review.overallStatus] ||
-                  result.review.overallStatus}
+                {getStatusLabel(result.review.overallStatus)}
               </strong>
             </div>
 

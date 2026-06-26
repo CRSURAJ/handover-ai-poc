@@ -1,5 +1,5 @@
 import type { HandoverExtractionResult } from "@/lib/types";
-import { badgeClass, statusLabels } from "@/lib/handoverUi";
+import { badgeClass, getStatusLabel } from "@/lib/handoverUi";
 
 type HeaderFieldsTableProps = {
   result: HandoverExtractionResult;
@@ -42,7 +42,7 @@ export function HeaderFieldsTable({ result }: HeaderFieldsTableProps) {
 
                 <td>
                   <span className={badgeClass(field.status)}>
-                    {statusLabels[field.status] || field.status}
+                    {getStatusLabel(field.status)}
                   </span>
                 </td>
 
