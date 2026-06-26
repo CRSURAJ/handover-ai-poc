@@ -1,15 +1,28 @@
-import OpenAI from "openai";
 import { NextRequest, NextResponse } from "next/server";
+import OpenAI from "openai";
+
 import { extractionJsonSchema } from "@/lib/schema";
-import type { HandoverExtractionResult } from "@/lib/types";
 import {
   CHECKLIST_ITEMS,
   HEADER_FIELDS,
   TEMPLATE_NAME,
   TEMPLATE_REVISION,
 } from "@/lib/template";
+import type { HandoverExtractionResult } from "@/lib/types";
 
 export const runtime = "nodejs";
+
+const MAX_SOURCE_CHARS = 120000;
+
+class ApiError extends Error {
+  constructor(
+    message: string,
+    public status = 500,
+    public detail?: string,
+  ) {
+    super(message);
+  }
+}
 
 function buildPrompt(sourceName: string, sourceText: string) {
   return `
@@ -33,34 +46,56 @@ Important rules:
 - Use handoverMeetingNotes for what Ops must discuss or confirm.
 
 Header fields to return exactly:
-${HEADER_FIELDS.map((f) => `- ${f.fieldKey}: ${f.fieldLabel}`).join("\n")}
+${HEADER_FIELDS.map((field) => `- ${field.fieldKey}: ${field.fieldLabel}`).join("\n")}
 
 Checklist items to return exactly:
-${CHECKLIST_ITEMS.map((i) => `- [${i.category}] ${i.itemLabel}`).join("\n")}
+${CHECKLIST_ITEMS.map((item) => `- [${item.category}] ${item.itemLabel}`).join("\n")}
 
 Source pack name:
 ${sourceName}
 
 Source pack text:
 ---
-${sourceText.slice(0, 120000)}
+${sourceText.slice(0, MAX_SOURCE_CHARS)}
 ---
 `;
+}
+
+function getOpenAIClient() {
+  const apiKey = process.env.OPENAI_API_KEY;
+
+  if (!apiKey) {
+    throw new ApiError(
+      "OpenAI API key is not configured.",
+      500,
+      "Add OPENAI_API_KEY to .env.local. This app is AI-only.",
+    );
+  }
+
+  return new OpenAI({ apiKey });
+}
+
+function parseExtractionOutput(outputText: string): HandoverExtractionResult {
+  try {
+    return {
+      ...JSON.parse(outputText),
+      extractionMode: "ai",
+    };
+  } catch (error) {
+    throw new ApiError(
+      "AI returned an invalid extraction format.",
+      502,
+      error instanceof Error ? error.message : String(error),
+    );
+  }
 }
 
 async function runOpenAIExtraction(
   sourceName: string,
   sourceText: string,
 ): Promise<HandoverExtractionResult> {
-  if (!process.env.OPENAI_API_KEY) {
-    throw new Error("OPENAI_API_KEY is required. This app is AI-only.");
-  }
-
-  const client = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-  });
-
-  const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
+  const client = getOpenAIClient();
+  const model = process.env.OPENAI_MODEL || "gpt-4.1-mini";
 
   const response = await client.responses.create({
     model,
@@ -75,44 +110,66 @@ async function runOpenAIExtraction(
     },
   });
 
-  const outputText = response.output_text;
-
-  if (!outputText) {
-    throw new Error("OpenAI response did not contain output_text.");
+  if (!response.output_text) {
+    throw new ApiError(
+      "AI did not return any extraction output.",
+      502,
+      "OpenAI response did not contain output_text.",
+    );
   }
 
-  return {
-    ...JSON.parse(outputText),
-    extractionMode: "ai",
-  };
+  return parseExtractionOutput(response.output_text);
+}
+
+function normaliseSourceName(value: unknown) {
+  const sourceName = String(value || "").trim();
+  return sourceName || "source-pack";
+}
+
+function normaliseSourceText(value: unknown) {
+  return String(value || "").trim();
+}
+
+function errorResponse(error: unknown) {
+  if (error instanceof ApiError) {
+    return NextResponse.json(
+      {
+        error: error.message,
+        detail: error.detail,
+      },
+      { status: error.status },
+    );
+  }
+
+  return NextResponse.json(
+    {
+      error: "AI extraction failed.",
+      detail: error instanceof Error ? error.message : String(error),
+    },
+    { status: 500 },
+  );
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    const sourceName = String(body.sourceName || "source-pack");
-    const sourceText = String(body.sourceText || "").trim();
+    const sourceName = normaliseSourceName(body.sourceName);
+    const sourceText = normaliseSourceText(body.sourceText);
 
     if (!sourceText) {
-      return NextResponse.json(
-        { error: "sourceText is required" },
-        { status: 400 },
+      throw new ApiError(
+        "Source text is required.",
+        400,
+        "Paste source text or upload at least one readable source document.",
       );
     }
 
-    const aiResult = await runOpenAIExtraction(sourceName, sourceText);
+    const result = await runOpenAIExtraction(sourceName, sourceText);
 
-    return NextResponse.json(aiResult);
+    return NextResponse.json(result);
   } catch (error) {
     console.error("AI extraction failed:", error);
-
-    return NextResponse.json(
-      {
-        error: "AI extraction failed",
-        detail: error instanceof Error ? error.message : String(error),
-      },
-      { status: 500 },
-    );
+    return errorResponse(error);
   }
 }
