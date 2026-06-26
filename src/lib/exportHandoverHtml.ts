@@ -78,7 +78,7 @@ export function buildHandoverHtml({
   <title>${escapeHtml(projectName)} - Handover Checklist</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: "Segoe UI", Arial, sans-serif;
       margin: 32px;
       color: #17312f;
       line-height: 1.45;
