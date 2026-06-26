@@ -8,3 +8,9 @@ yarn-debug.log*
 yarn-error.log*
 .vercel
 tsconfig.tsbuildinfo
+
+out
+.env
+.env.*.local
+.cleanup-backup
+cleanup_ai_only.sh
