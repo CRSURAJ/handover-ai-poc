@@ -23,6 +23,7 @@ export function useHandoverExtraction() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [fileInputKey, setFileInputKey] = useState(0);
 
   const progress = useMemo(() => {
     if (!result) return null;
@@ -94,11 +95,7 @@ export function useHandoverExtraction() {
     setUploadedFiles([]);
     setError(null);
 
-    document.querySelectorAll<HTMLInputElement>('input[type="file"]').forEach(
-      (input) => {
-        input.value = "";
-      },
-    );
+    setFileInputKey((current) => current + 1);
   }
 
   function exportHandoverChecklist() {
@@ -123,6 +120,7 @@ export function useHandoverExtraction() {
     uploadedFiles,
     error,
     progress,
+    fileInputKey,
     setSourceName,
     updateSourceText,
     onFilesChange,

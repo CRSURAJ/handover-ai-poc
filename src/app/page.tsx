@@ -17,6 +17,7 @@ export default function Home() {
     uploadedFiles,
     error,
     progress,
+    fileInputKey,
     setSourceName,
     updateSourceText,
     onFilesChange,
@@ -45,6 +46,7 @@ export default function Home() {
           isExtracting={isExtracting}
           error={error}
           hasResult={Boolean(result)}
+          fileInputKey={fileInputKey}
           onSourceNameChange={setSourceName}
           onSourceTextChange={updateSourceText}
           onFilesChange={onFilesChange}

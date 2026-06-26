@@ -6,6 +6,7 @@ type SourcePackPanelProps = {
   isExtracting: boolean;
   error: string | null;
   hasResult: boolean;
+  fileInputKey: number;
   onSourceNameChange: (value: string) => void;
   onSourceTextChange: (value: string) => void;
   onFilesChange: (files: FileList | null) => void;
@@ -22,6 +23,7 @@ export function SourcePackPanel({
   isExtracting,
   error,
   hasResult,
+  fileInputKey,
   onSourceNameChange,
   onSourceTextChange,
   onFilesChange,
@@ -53,6 +55,7 @@ export function SourcePackPanel({
       <label>
         Upload source files
         <input
+          key={fileInputKey}
           type="file"
           multiple
           accept=".txt,.eml,.csv,.md,.pdf,.docx,.xlsx,.xls,.html,.htm"
