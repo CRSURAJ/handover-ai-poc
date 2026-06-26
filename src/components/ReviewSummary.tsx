@@ -14,7 +14,7 @@ type ReviewSummaryProps = {
 
 export function ReviewSummary({ result, progress }: ReviewSummaryProps) {
   return (
-    <div className="panel">
+    <section className="panel">
       <div className="panelHeader">
         <div>
           <h2>2. Review Summary</h2>
@@ -87,6 +87,6 @@ export function ReviewSummary({ result, progress }: ReviewSummaryProps) {
           </div>
         </div>
       )}
-    </div>
+    </section>
   );
 }
