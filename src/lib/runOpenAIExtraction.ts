@@ -3,6 +3,7 @@ import OpenAI from "openai";
 import { buildExtractionPrompt } from "@/lib/buildExtractionPrompt";
 import { extractionJsonSchema } from "@/lib/schema";
 import type { HandoverExtractionResult } from "@/lib/types";
+import { parseHandoverExtractionResult } from "@/lib/validateHandoverResult";
 
 export class ExtractionApiError extends Error {
   constructor(
@@ -31,10 +32,12 @@ function getOpenAIClient() {
 
 function parseExtractionOutput(outputText: string): HandoverExtractionResult {
   try {
-    return {
+    const parsed = {
       ...JSON.parse(outputText),
       extractionMode: "ai",
     };
+
+    return parseHandoverExtractionResult(parsed);
   } catch (error) {
     throw new ExtractionApiError(
       "AI returned an invalid extraction format.",

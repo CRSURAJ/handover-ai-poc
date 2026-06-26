@@ -1,4 +1,5 @@
 import type { HandoverExtractionResult } from "@/lib/types";
+import { parseHandoverExtractionResult } from "@/lib/validateHandoverResult";
 
 type ApiErrorPayload = {
   error?: unknown;
@@ -59,7 +60,7 @@ function getApiErrorDetail(payload: unknown) {
 export async function extractHandoverChecklist(params: {
   sourceName: string;
   sourceText: string;
-}) {
+}): Promise<HandoverExtractionResult> {
   const response = await fetch("/api/extract", {
     method: "POST",
     headers: {
@@ -77,7 +78,14 @@ export async function extractHandoverChecklist(params: {
     );
   }
 
-  return data as HandoverExtractionResult;
+  try {
+    return parseHandoverExtractionResult(data);
+  } catch (error) {
+    throw new HandoverApiError(
+      "Extraction response was invalid.",
+      error instanceof Error ? error.message : String(error),
+    );
+  }
 }
 
 export async function parseSourceFiles(files: File[]) {
