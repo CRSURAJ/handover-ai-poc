@@ -1,0 +1,28 @@
+{
+  "name": "handover-ai-poc",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "next": "latest",
+    "openai": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "typescript": "latest",
+    "zod": "latest",
+    "pdf-parse": "^1.1.1",
+    "mammoth": "^1.9.0",
+    "xlsx": "^0.18.5",
+    "mailparser": "^3.7.1"
+  },
+  "devDependencies": {}
+}
