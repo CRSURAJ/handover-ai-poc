@@ -19,7 +19,7 @@ export function ReviewSummary({ result, progress }: ReviewSummaryProps) {
       {!result ? (
         <div className="empty">
           <span className="emptyIcon">🔍</span>
-          Run extraction to see risk assessment, missing information, and Ops summary.
+          Run extraction to see risk assessment, missing information, and Scope of Works.
         </div>
       ) : (
         <div className="stack">

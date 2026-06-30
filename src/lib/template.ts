@@ -11,7 +11,7 @@ export const HEADER_FIELDS = [
 ] as const;
 
 export const CHECKLIST_ITEMS = [
-  { category: "Project Planning", itemLabel: "Project Scope (REQUIRED IN WRITING)", critical: true },
+  { category: "Project Planning", itemLabel: "Project Scope", critical: true },
   { category: "Project Planning", itemLabel: "Drawings (if available) – P&ID, GA & Skid", critical: false },
   { category: "Project Planning", itemLabel: "Itemised Quote", critical: true },
   { category: "Project Planning", itemLabel: "Design Schematic", critical: false },

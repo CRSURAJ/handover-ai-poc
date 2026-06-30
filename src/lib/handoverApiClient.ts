@@ -1,4 +1,5 @@
 import type { HandoverExtractionResult } from "@/lib/types";
+import type { ScopeOfWorksResult } from "@/lib/sowTypes";
 import { parseHandoverExtractionResult } from "@/lib/validateHandoverResult";
 
 type ApiErrorPayload = {
@@ -60,6 +61,7 @@ function getApiErrorDetail(payload: unknown) {
 export async function extractHandoverChecklist(params: {
   sourceName: string;
   sourceText: string;
+  voiceNotes?: string;
   signal?: AbortSignal;
 }): Promise<HandoverExtractionResult> {
   const { signal, ...bodyParams } = params;
@@ -87,6 +89,32 @@ export async function extractHandoverChecklist(params: {
       error instanceof Error ? error.message : String(error),
     );
   }
+}
+
+export async function generateScopeOfWorks(params: {
+  sourceName: string;
+  sourceText: string;
+  voiceNotes?: string;
+  signal?: AbortSignal;
+}): Promise<ScopeOfWorksResult> {
+  const { signal, ...bodyParams } = params;
+  const response = await fetch("/api/scope-of-works", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(bodyParams),
+    signal,
+  });
+
+  const data = await readJson(response);
+
+  if (!response.ok) {
+    throw new HandoverApiError(
+      getApiErrorMessage(data, "Scope of Works generation failed"),
+      getApiErrorDetail(data),
+    );
+  }
+
+  return data as ScopeOfWorksResult;
 }
 
 export async function parseSourceFiles(files: File[]) {

@@ -70,7 +70,15 @@ Example field outputs:
 {"fieldKey":"paymentMethod","extractedValue":null,"status":"missing","confidence":"high","evidenceText":"","sourceName":"quote-v3.pdf","reasoningNote":"No payment terms found in any source document."}`;
 }
 
-export function buildExtractionPrompt(sourceName: string, sourceText: string) {
+export function buildExtractionPrompt(
+  sourceName: string,
+  sourceText: string,
+  voiceNotes?: string,
+) {
+  const voiceSection = voiceNotes?.trim()
+    ? `\nVoice notes (spoken by the salesperson after reviewing the documents — use these to fill missing fields or resolve conflicts in the source pack):\n---\n${voiceNotes.trim()}\n---\n`
+    : "";
+
   return `${STATIC_PROMPT_PREFIX}
 
 Source pack name:
@@ -80,5 +88,5 @@ Source pack text:
 ---
 ${sourceText.slice(0, MAX_SOURCE_CHARS)}
 ---
-`;
+${voiceSection}`;
 }

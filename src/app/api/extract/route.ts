@@ -62,14 +62,15 @@ export async function POST(request: NextRequest) {
 
     const sourceName = normaliseSourceName(body.sourceName);
     const sourceText = normaliseSourceText(body.sourceText);
+    const voiceNotes = String(body.voiceNotes || "").trim();
 
     // Validate payload before charging the rate limit — invalid requests
     // (empty or oversized body) must not count against a client's quota.
-    if (!sourceText) {
+    if (!sourceText && !voiceNotes) {
       throw new RequestApiError(
         "Source text is required.",
         400,
-        "Paste source text or upload at least one readable source document.",
+        "Upload a source document or provide a voice transcript.",
       );
     }
 
@@ -89,7 +90,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const result = await runOpenAIExtraction(sourceName, sourceText);
+    const result = await runOpenAIExtraction(sourceName, sourceText, voiceNotes);
 
     return NextResponse.json(result);
   } catch (error) {
