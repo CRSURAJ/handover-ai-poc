@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { SowApiError, runSowExtraction } from "@/lib/runSowExtraction";
+import { SowQuestionsApiError, runSowQuestionsExtraction } from "@/lib/runSowQuestionsExtraction";
 import { checkRateLimit } from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
 
-const RATE_LIMIT_MAX = 10;
+const RATE_LIMIT_MAX = 20;
 const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
 const MAX_SOURCE_TEXT_CHARS = 500_000;
 
@@ -25,13 +25,13 @@ function getClientIp(request: NextRequest) {
 }
 
 function errorResponse(error: unknown) {
-  if (error instanceof SowApiError || error instanceof RequestApiError) {
+  if (error instanceof SowQuestionsApiError || error instanceof RequestApiError) {
     return NextResponse.json(
       { error: error.message, detail: error.detail },
       { status: error.status },
     );
   }
-  return NextResponse.json({ error: "Scope of Works generation failed." }, { status: 500 });
+  return NextResponse.json({ error: "Failed to load questions." }, { status: 500 });
 }
 
 export async function POST(request: NextRequest) {
@@ -41,9 +41,6 @@ export async function POST(request: NextRequest) {
     const sourceName = String(body.sourceName || "").trim().slice(0, 500) || "source-pack";
     const sourceText = String(body.sourceText || "").trim();
     const voiceNotes = String(body.voiceNotes || "").trim();
-    const answers = body.answers && typeof body.answers === "object" && !Array.isArray(body.answers)
-      ? (body.answers as Record<string, string>)
-      : undefined;
 
     if (!sourceText && !voiceNotes) {
       throw new RequestApiError(
@@ -58,14 +55,14 @@ export async function POST(request: NextRequest) {
     }
 
     const ip = getClientIp(request);
-    if (!checkRateLimit("sow", ip, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS)) {
+    if (!checkRateLimit("sow-questions", ip, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS)) {
       return NextResponse.json({ error: "Rate limit exceeded. Try again later." }, { status: 429 });
     }
 
-    const result = await runSowExtraction(sourceName, sourceText, voiceNotes, answers);
+    const result = await runSowQuestionsExtraction(sourceName, sourceText, voiceNotes);
     return NextResponse.json(result);
   } catch (error) {
-    console.error("SOW generation failed:", error);
+    console.error("SOW questions failed:", error);
     return errorResponse(error);
   }
 }

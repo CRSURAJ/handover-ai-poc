@@ -63,6 +63,9 @@ export async function POST(request: NextRequest) {
     const sourceName = normaliseSourceName(body.sourceName);
     const sourceText = normaliseSourceText(body.sourceText);
     const voiceNotes = String(body.voiceNotes || "").trim();
+    const answers = body.answers && typeof body.answers === "object" && !Array.isArray(body.answers)
+      ? (body.answers as Record<string, string>)
+      : undefined;
 
     // Validate payload before charging the rate limit — invalid requests
     // (empty or oversized body) must not count against a client's quota.
@@ -90,7 +93,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const result = await runOpenAIExtraction(sourceName, sourceText, voiceNotes);
+    const result = await runOpenAIExtraction(sourceName, sourceText, voiceNotes, answers);
 
     return NextResponse.json(result);
   } catch (error) {

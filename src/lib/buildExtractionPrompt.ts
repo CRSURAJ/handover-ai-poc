@@ -44,6 +44,23 @@ Extraction rules:
 - Keep comments concise and directly useful for Ops handover.
 - For checklist items: comments = best extracted answer; remarks = warnings/exclusions/follow-up; handoverMeetingNotes = what Ops must confirm in the handover meeting.
 
+## Project Type extraction rules (CRITICAL — read carefully)
+
+The projectType field must be one of exactly these four values:
+"Supply Loose" | "Pre-Fab" | "Pre-Fab &/OR Install" | "Supply Loose & Install"
+
+Negation check — ALWAYS look for "without", "W/O", "w/o" BEFORE "skid" or "skid frame":
+- "without Skid Frame", "W/O Skid Frame", "w/o skid frame", "without skid" → NO skid frame → "Supply Loose" (or "Supply Loose & Install" if install is also mentioned)
+- "Skid Frame" present WITHOUT any negation → "Pre-Fab" (or "Pre-Fab &/OR Install" if install is also mentioned)
+
+Do NOT match on "Skid Frame" alone if it is preceded within 3 words by "without", "W/O", or "w/o". The negation overrides.
+
+Examples:
+- "Air to Water Heat Pump - without Skid Frame" → "Supply Loose"
+- "Supply of Prefabricated Skid Frame" → "Pre-Fab"
+- "W/O Skid Frame, installation included" → "Supply Loose & Install"
+- "Skid Frame supply and install" → "Pre-Fab &/OR Install"
+
 Critical items (mandatory before handover can proceed — weight these higher in risk assessment):
 ${criticalLabels}
 
@@ -74,9 +91,19 @@ export function buildExtractionPrompt(
   sourceName: string,
   sourceText: string,
   voiceNotes?: string,
+  answers?: Record<string, string>,
 ) {
   const voiceSection = voiceNotes?.trim()
     ? `\nVoice notes (spoken by the salesperson after reviewing the documents — use these to fill missing fields or resolve conflicts in the source pack):\n---\n${voiceNotes.trim()}\n---\n`
+    : "";
+
+  const confirmedSection = answers && Object.keys(answers).length > 0
+    ? (() => {
+        const relevant = Object.entries(answers).filter(([, v]) => v !== "");
+        if (!relevant.length) return "";
+        const lines = relevant.map(([id, val]) => `${id}: ${val}`).join("\n");
+        return `\nConfirmed project details (verified by sales team — use these to fill header fields; they take precedence over ambiguous source text):\n${lines}\n\nWhen you fill a field using a confirmed detail above, set evidenceText to the matching line (e.g. "project_type: Supply Loose") and sourceName to "Confirmed project details".\n`;
+      })()
     : "";
 
   return `${STATIC_PROMPT_PREFIX}
@@ -88,5 +115,5 @@ Source pack text:
 ---
 ${sourceText.slice(0, MAX_SOURCE_CHARS)}
 ---
-${voiceSection}`;
+${voiceSection}${confirmedSection}`;
 }

@@ -1,5 +1,6 @@
 import type { HandoverExtractionResult } from "@/lib/types";
 import type { ScopeOfWorksResult } from "@/lib/sowTypes";
+import type { SowQuestionsResult } from "@/lib/sowQuestionTypes";
 import { parseHandoverExtractionResult } from "@/lib/validateHandoverResult";
 
 type ApiErrorPayload = {
@@ -62,6 +63,7 @@ export async function extractHandoverChecklist(params: {
   sourceName: string;
   sourceText: string;
   voiceNotes?: string;
+  answers?: Record<string, string>;
   signal?: AbortSignal;
 }): Promise<HandoverExtractionResult> {
   const { signal, ...bodyParams } = params;
@@ -91,10 +93,34 @@ export async function extractHandoverChecklist(params: {
   }
 }
 
+export async function fetchSowQuestions(params: {
+  sourceName: string;
+  sourceText: string;
+  voiceNotes?: string;
+}): Promise<SowQuestionsResult> {
+  const response = await fetch("/api/sow-questions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(params),
+  });
+
+  const data = await readJson(response);
+
+  if (!response.ok) {
+    throw new HandoverApiError(
+      getApiErrorMessage(data, "Failed to load questions"),
+      getApiErrorDetail(data),
+    );
+  }
+
+  return data as SowQuestionsResult;
+}
+
 export async function generateScopeOfWorks(params: {
   sourceName: string;
   sourceText: string;
   voiceNotes?: string;
+  answers?: Record<string, string>;
   signal?: AbortSignal;
 }): Promise<ScopeOfWorksResult> {
   const { signal, ...bodyParams } = params;

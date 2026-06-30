@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { ChecklistTable } from "@/components/ChecklistTable";
 import { HeaderFieldsTable } from "@/components/HeaderFieldsTable";
+import { LoadingOverlay } from "@/components/LoadingOverlay";
 import { ScopeOfWorksPanel } from "@/components/ScopeOfWorksPanel";
 import { ReviewSummary } from "@/components/ReviewSummary";
 import { SourcePackPanel } from "@/components/SourcePackPanel";
@@ -37,23 +38,31 @@ export default function Home() {
     exportHandoverChecklist,
     updateHeaderField,
     updateChecklistItem,
-    generateSow,
+    startSow,
+    confirmFull,
     sowResult,
+    updateSowResult,
+    sowQuestions,
     isSowGenerating,
+    isSowQuestioning,
     sowError,
+    sowQuestionsError,
   } = useHandoverExtraction();
 
   const resultsRef = useRef<HTMLDivElement>(null);
   const [voiceTranscript, setVoiceTranscript] = useState("");
 
+  const isGenerating = isExtracting || isSowGenerating || isSowQuestioning;
+
   useEffect(() => {
-    if (result && resultsRef.current) {
+    if ((result || sowResult) && resultsRef.current) {
       resultsRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
     }
-  }, [result]);
+  }, [result, sowResult]);
 
   return (
     <>
+      <LoadingOverlay visible={isGenerating} onCancel={resetAll} />
       <main className="shell">
         <div className="outerCard">
           <div className="appHeader">
@@ -76,14 +85,22 @@ export default function Home() {
           <div className="actionBar">
             <button
               className="button sourceActionButton"
-              onClick={() => extract(voiceTranscript)}
-              disabled={isUploading || isExtracting || (!sourceText.trim() && !voiceTranscript.trim())}
+              onClick={() => startSow(voiceTranscript)}
+              disabled={isUploading || isGenerating || (!sourceText.trim() && !voiceTranscript.trim())}
             >
               {isUploading
                 ? "Parsing files…"
-                : isExtracting
-                  ? "Extracting…"
-                  : "✦ Auto-fill Checklist"}
+                : isGenerating
+                  ? "Generating…"
+                  : "✦ Generate SOW + Checklist"}
+            </button>
+
+            <button
+              className="button sourceActionButton secondaryActionButton"
+              onClick={() => extract(voiceTranscript)}
+              disabled={isUploading || isGenerating || (!sourceText.trim() && !voiceTranscript.trim())}
+            >
+              Quick Checklist
             </button>
 
             <button
@@ -94,29 +111,51 @@ export default function Home() {
               ↓ Export
             </button>
 
-            <button className="button sourceActionButton resetButton" onClick={resetAll}>
+            <button className="button sourceActionButton resetButton" onClick={() => { resetAll(); window.location.reload(); }}>
               ↺ Reset
             </button>
           </div>
 
-          <ReviewSummary result={result} progress={progress} />
-
-          {result?.wasTruncated && (
-            <p className="truncationWarning">
-              ⚠ Source too large — only the first 120,000 characters were
-              analysed. Some fields may show as missing because they were in the
-              dropped content. Try splitting your documents into smaller uploads.
-            </p>
-          )}
-
-          {isExtracting && !result && (
-            <>
-              <SkeletonTable rows={6} />
-              <SkeletonTable rows={12} />
-            </>
-          )}
-
           <div ref={resultsRef}>
+            <ScopeOfWorksPanel
+              result={sowResult}
+              isGenerating={isSowGenerating}
+              isQuestioning={isSowQuestioning}
+              error={sowError}
+              questions={sowQuestions}
+              questionsError={sowQuestionsError}
+              onGenerate={() => startSow(voiceTranscript)}
+              onConfirmQuestions={confirmFull}
+              canGenerate={!isUploading && !isGenerating && (!!sourceText.trim() || !!voiceTranscript.trim())}
+              onUpdate={updateSowResult}
+            />
+
+            <ReviewSummary result={result} progress={progress} />
+
+            {result?.wasTruncated && (
+              <p className="truncationWarning">
+                ⚠ Source too large — only the first 120,000 characters were
+                analysed. Some fields may show as missing because they were in the
+                dropped content. Try splitting your documents into smaller uploads.
+              </p>
+            )}
+
+            {isExtracting && !result && (
+              <>
+                <SkeletonTable rows={6} />
+                <SkeletonTable rows={12} />
+              </>
+            )}
+
+            {!isExtracting && !result && error && (
+              <section className="panel wide">
+                <div className="panelHeader"><div><h2>Advisory Handover Checklist</h2></div></div>
+                <p className="error" style={{ margin: "16px 0 0" }}>
+                  ⚠ Checklist extraction failed — {error}. Try generating again.
+                </p>
+              </section>
+            )}
+
             {result && (
               <section className="panel wide">
                 <div className="panelHeader">
@@ -127,14 +166,6 @@ export default function Home() {
               </section>
             )}
           </div>
-
-          <ScopeOfWorksPanel
-            result={sowResult}
-            isGenerating={isSowGenerating}
-            error={sowError}
-            onGenerate={() => generateSow(voiceTranscript)}
-            canGenerate={!isUploading && !isSowGenerating && (!!sourceText.trim() || !!voiceTranscript.trim())}
-          />
         </div>{/* outerCard */}
       </main>
     </>

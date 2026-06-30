@@ -6,7 +6,7 @@ export const HEADER_FIELDS = [
   { fieldKey: "customer", fieldLabel: "Customer" },
   { fieldKey: "salesperson", fieldLabel: "Salesperson" },
   { fieldKey: "estimatedDeliveryDate", fieldLabel: "Est. Delivery Date" },
-  { fieldKey: "projectType", fieldLabel: "Pre-Fab / Pre-Fab + Install" },
+  { fieldKey: "projectType", fieldLabel: "Project Type" },
   { fieldKey: "paymentMethod", fieldLabel: "Payment Method" },
 ] as const;
 

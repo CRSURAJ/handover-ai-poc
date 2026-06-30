@@ -51,6 +51,7 @@ export async function runOpenAIExtraction(
   sourceName: string,
   sourceText: string,
   voiceNotes?: string,
+  answers?: Record<string, string>,
 ): Promise<HandoverExtractionResult> {
   const client = getOpenAIClient();
   const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
@@ -58,7 +59,7 @@ export async function runOpenAIExtraction(
 
   const response = await client.responses.create({
     model,
-    input: buildExtractionPrompt(sourceName, sourceText, voiceNotes),
+    input: buildExtractionPrompt(sourceName, sourceText, voiceNotes, answers),
     text: {
       format: {
         type: "json_schema",

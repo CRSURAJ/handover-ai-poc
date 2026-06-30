@@ -3,40 +3,50 @@ export const MAX_SOW_SOURCE_CHARS = 120_000;
 const SYSTEM_PROMPT = `You are an expert technical writer for Automatic Heating (AH), an Australian HVAC engineering contractor. Your task is to extract a structured Scope of Works from the provided source materials (purchase orders, quotes, voice notes, emails, drawings).
 
 ## Step 1 — Set scope flags
-Determine which sections apply to this project:
+
+### Project type → flag mapping (use this when project_type is confirmed in the details below)
+
+| Project type | Flags to set true |
+|---|---|
+| Supply Loose | hasSupply |
+| Pre-Fab | hasSupply, isPrefabSkid, hasFat, hasPreliminaryDrawings, hasDelivery |
+| Pre-Fab &/OR Install | hasSupply, isPrefabSkid, hasFat, hasPreliminaryDrawings, hasDelivery, hasCommissioning |
+| Supply Loose & Install | hasSupply, hasCommissioning |
+
+If project_type is NOT confirmed, infer from source — check for negation FIRST:
+STEP 1: Is "skid frame" / "skid" preceded within 3 words by "without", "W/O", or "w/o"?
+  YES (e.g. "without Skid Frame", "W/O skid frame") → treat as NO skid → go to STEP 3
+  NO  → skid frame is in scope → go to STEP 2
+STEP 2 (skid present, unnegated):
+  No install/commissioning → Pre-Fab
+  Install or commissioning → Pre-Fab &/OR Install
+STEP 3 (no skid, or negated skid):
+  No install/commissioning → Supply Loose
+  Install or commissioning → Supply Loose & Install
+IMPORTANT: "without Skid Frame" is a negation — it means Supply Loose, NOT Pre-Fab.
+
+### Additional flags (set independently of project type)
 
 | Flag | Set true when… |
 |---|---|
 | hasRemoval | Removing or decommissioning existing plant |
-| hasSupply | AH is supplying new equipment or a prefab skid |
-| isPrefabSkid | Supplied item is a factory-built skid frame |
 | installOnly | AH installs customer-supplied equipment (no AH supply) |
-| hasElectrical | New electrical switchboard or controls panel in scope |
+| hasElectrical | Electrical panel is in scope (supply or install) — set true for "Supply Loose Control Panel" or "Installation of Control Panel"; false for "No Control Panel needed" |
 | hasAncillaries | New pipework, valves, insulation, or mechanical ancillaries |
-| hasFat | Factory Acceptance Testing at Epping before despatch (prefab skid only) |
-| hasPreliminaryDrawings | GA/skid drawings required before manufacture (prefab skid) |
-| hasCommissioning | AH commissions new plant on-site |
 | hasProgramme | Live or occupied site requiring disruption management |
-| hasDelivery | Include delivery section with address and lead-time note |
-
-Typical flag combinations:
-- Supply only (prefab skid): hasSupply, isPrefabSkid, hasFat, hasPreliminaryDrawings, hasDelivery
-- Supply + install: hasSupply, hasCommissioning, plus hasElectrical/hasAncillaries if in scope
-- Supply + install + removal: all of the above + hasRemoval
-- Install + removal only: hasRemoval, installOnly, hasCommissioning
-- Full boiler/heat pump replacement: all flags true
 
 ## Step 2 — Extract project details
 - projectName: the project or case number and customer name (e.g. "30084 – Sonac")
 - client: the client/customer name
-- worksDescription: a subtitle describing the overall works. Examples:
-  "Supply, Installation & Upgrade of Boiler Plant"
-  "Supply of Prefabricated Hydronic Heating Skid Frame"
-  "Supply & Installation of Air-to-Water Heat Pump System"
-  "Installation & Decommissioning of Boiler Plant"
-- siteAddress: site address where works are performed
-- quoteReference: quote or case reference number
-- poNumber: purchase order number (leave blank if not found)
+- worksDescription: a subtitle describing the overall works. Derive from project_type if confirmed:
+  - Supply Loose → "Supply of [Equipment Name]"
+  - Pre-Fab → "Supply of Prefabricated [Equipment] Skid Frame"
+  - Pre-Fab &/OR Install → "Supply & Installation of Prefabricated [Equipment] Skid Frame"
+  - Supply Loose & Install → "Supply & Installation of [Equipment Name]"
+  If project_type is not confirmed, infer from source using the same keyword rules.
+- siteAddress: use site_address from confirmed details if provided, otherwise extract from source
+- quoteReference: use quote_reference from confirmed details if provided, otherwise extract from source
+- poNumber: use po_number from confirmed details if provided, otherwise extract from source (leave blank if not found)
 
 ## Step 3 — Generate section content
 
@@ -46,7 +56,7 @@ Typical flag combinations:
 
 **supplySections**: one entry per equipment group (e.g. "Meridian Condensing Boilers", "Flue System", "Buffer Vessels", "Prefabricated Skid Frame"). Use description for the intro paragraph. Use items for bullet-point components including model, quantity, capacity/efficiency from the quote.
 
-**installDescription**: brief paragraph describing the installation works. Only populate if hasSupply or installOnly is true.
+**installDescription**: brief paragraph describing the installation works. Only populate if hasCommissioning or installOnly is true. Leave empty for Supply Loose (supply-only jobs have no installation scope).
 
 **installItems**: bullet list of installation tasks (mechanical fix, pipework connections, setting to work, etc.).
 
@@ -79,6 +89,7 @@ export function buildSowPrompt(
   sourceName: string,
   sourceText: string,
   voiceNotes?: string,
+  answers?: Record<string, string>,
 ): Array<{ role: "system" | "user"; content: string }> {
   const truncated = sourceText.slice(0, MAX_SOW_SOURCE_CHARS);
 
@@ -86,6 +97,16 @@ export function buildSowPrompt(
 
   if (voiceNotes?.trim()) {
     parts.push("", "--- VOICE NOTES ---", voiceNotes.trim());
+  }
+
+  if (answers && Object.keys(answers).length > 0) {
+    parts.push("", "--- CONFIRMED PROJECT DETAILS (verified by sales team — take precedence over source) ---");
+    parts.push("Field reference: project_type controls scope flags; electrical_scope controls hasElectrical;");
+    parts.push("has_removal/has_ancillaries/has_programme are boolean flags; site_address/delivery_address/quote_reference/po_number/prepared_for populate header fields.");
+    parts.push("");
+    for (const [id, answer] of Object.entries(answers)) {
+      if (answer !== "") parts.push(`${id}: ${answer}`);
+    }
   }
 
   return [
