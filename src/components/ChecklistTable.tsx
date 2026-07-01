@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { ChecklistStatus, HandoverExtractionResult } from "@/lib/types";
 import { badgeClass, getStatusLabel } from "@/lib/handoverUi";
+import { groupChecklistItems } from "@/lib/checklistGroups";
 
 const CHECKLIST_STATUSES: ChecklistStatus[] = [
   "complete", "pending", "tbc", "requires_review", "critical_issue", "not_applicable", "not_started",
@@ -48,23 +49,7 @@ export function ChecklistTable({ result, onUpdateItem }: Props) {
     return editingKey === `${label}:${field}`;
   }
 
-  const CATEGORY_ORDER = [
-    "Project Planning",
-    "Plant Area Info / Site Assessment",
-    "Commissioning",
-    "Communications",
-  ];
-
-  const groupMap = new Map<string, number[]>();
-  result.checklistItems.forEach((item, i) => {
-    const existing = groupMap.get(item.category);
-    if (existing) existing.push(i);
-    else groupMap.set(item.category, [i]);
-  });
-
-  const groups = CATEGORY_ORDER
-    .filter((cat) => groupMap.has(cat))
-    .map((cat) => ({ category: cat, indices: groupMap.get(cat)! }));
+  const groups = groupChecklistItems(result);
 
   return (
     <div className="tableWrap" style={{ marginTop: 20 }}>

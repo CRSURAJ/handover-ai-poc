@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 
 import {
   extractHandoverChecklist,
@@ -14,12 +14,10 @@ import {
   buildHandoverHtml,
   getHandoverProjectName,
 } from "@/lib/exportHandoverHtml";
-import { downloadTextFile, makeFileName } from "@/lib/handoverUi";
+import { buildHandoverXlsxBuffer } from "@/lib/exportHandoverXlsx";
+import { downloadBinaryFile, downloadTextFile, makeFileName } from "@/lib/handoverUi";
 import { getHandoverProgress } from "@/lib/handoverProgress";
 import type { HandoverExtractionResult } from "@/lib/types";
-
-// Abort extraction after 90 seconds to prevent the UI hanging indefinitely.
-const EXTRACTION_TIMEOUT_MS = 300_000;
 
 export function useHandoverExtraction() {
   const [sourceName, setSourceName] = useState("");
@@ -38,51 +36,11 @@ export function useHandoverExtraction() {
   const [error, setError] = useState<string | null>(null);
   const [fileInputKey, setFileInputKey] = useState(0);
 
-  const abortControllerRef = useRef<AbortController | null>(null);
-
   const progress = useMemo(() => getHandoverProgress(result), [result]);
 
   function updateSourceText(value: string) {
     setSourceText(value);
     setResult(null);
-  }
-
-  async function extract(voiceNotes?: string) {
-    abortControllerRef.current?.abort();
-    const controller = new AbortController();
-    abortControllerRef.current = controller;
-
-    const timeoutId = setTimeout(
-      () => controller.abort(),
-      EXTRACTION_TIMEOUT_MS,
-    );
-
-    setIsExtracting(true);
-    setError(null);
-    setResult(null);
-
-    try {
-      const extractionResult = await extractHandoverChecklist({
-        sourceName,
-        sourceText,
-        voiceNotes,
-        signal: controller.signal,
-      });
-
-      setResult(extractionResult);
-    } catch (err) {
-      if (err instanceof Error && err.name === "AbortError") {
-        setError(
-          "Extraction timed out after 5 minutes. Try reducing the amount of source material.",
-        );
-      } else {
-        setError(err instanceof Error ? err.message : "Extraction failed");
-      }
-    } finally {
-      clearTimeout(timeoutId);
-      setIsExtracting(false);
-      abortControllerRef.current = null;
-    }
   }
 
   async function onFilesChange(files: FileList | null) {
@@ -108,9 +66,6 @@ export function useHandoverExtraction() {
   }
 
   function resetAll() {
-    abortControllerRef.current?.abort();
-    abortControllerRef.current = null;
-
     setSourceName("");
     setSourceText("");
     setResult(null);
@@ -232,16 +187,33 @@ export function useHandoverExtraction() {
     });
   }
 
-  function exportHandoverChecklist() {
+  function exportHandoverPdf() {
     if (!result) return;
 
     const projectName = getHandoverProjectName(result, sourceName);
-    const html = buildHandoverHtml({ result, sourceName, progress });
+    const html = buildHandoverHtml({ result, sourceName, progress, sow: sowResult });
 
     downloadTextFile(
       makeFileName(projectName),
       html,
       "text/html;charset=utf-8",
+    );
+  }
+
+  async function exportSpreadsheet() {
+    if (!result) return;
+
+    const projectName = getHandoverProjectName(result, sourceName);
+    const buffer = await buildHandoverXlsxBuffer({
+      result,
+      sourceName,
+      sow: sowResult,
+    });
+
+    downloadBinaryFile(
+      makeFileName(projectName, "xlsx"),
+      buffer,
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     );
   }
 
@@ -258,9 +230,9 @@ export function useHandoverExtraction() {
     setSourceName,
     updateSourceText,
     onFilesChange,
-    extract,
     resetAll,
-    exportHandoverChecklist,
+    exportHandoverPdf,
+    exportSpreadsheet,
     updateHeaderField,
     updateChecklistItem,
     startSow,

@@ -56,20 +56,27 @@ export function getStatusLabel(value: StatusValue) {
   return statusLabels[value];
 }
 
-export function badgeClass(value: StatusValue) {
+export type StatusCategory = "good" | "warn" | "bad" | "neutral";
+
+export function getStatusCategory(value: StatusValue): StatusCategory {
   if (goodStatuses.has(value)) {
-    return "badge good";
+    return "good";
   }
 
   if (warningStatuses.has(value)) {
-    return "badge warn";
+    return "warn";
   }
 
   if (badStatuses.has(value)) {
-    return "badge bad";
+    return "bad";
   }
 
-  return "badge";
+  return "neutral";
+}
+
+export function badgeClass(value: StatusValue) {
+  const category = getStatusCategory(value);
+  return category === "neutral" ? "badge" : `badge ${category}`;
 }
 
 export function escapeHtml(value: unknown) {
@@ -81,7 +88,7 @@ export function escapeHtml(value: unknown) {
     .replaceAll("'", "&#039;");
 }
 
-export function makeFileName(value: string) {
+export function makeFileName(value: string, extension = "html") {
   const safeName = value
     .trim()
     .replace(/[^a-z0-9]+/gi, "-")
@@ -90,15 +97,10 @@ export function makeFileName(value: string) {
 
   const date = new Date().toISOString().slice(0, 10);
 
-  return `${safeName || "handover-checklist"}-${date}.html`;
+  return `${safeName || "handover-checklist"}-${date}.${extension}`;
 }
 
-export function downloadTextFile(
-  fileName: string,
-  content: string,
-  mimeType: string,
-) {
-  const blob = new Blob([content], { type: mimeType });
+function triggerDownload(blob: Blob, fileName: string) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
 
@@ -110,4 +112,20 @@ export function downloadTextFile(
   link.remove();
 
   URL.revokeObjectURL(url);
+}
+
+export function downloadTextFile(
+  fileName: string,
+  content: string,
+  mimeType: string,
+) {
+  triggerDownload(new Blob([content], { type: mimeType }), fileName);
+}
+
+export function downloadBinaryFile(
+  fileName: string,
+  data: ArrayBufferLike,
+  mimeType: string,
+) {
+  triggerDownload(new Blob([data as ArrayBuffer], { type: mimeType }), fileName);
 }

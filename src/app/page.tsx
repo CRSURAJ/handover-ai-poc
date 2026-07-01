@@ -33,9 +33,9 @@ export default function Home() {
     progress,
     fileInputKey,
     onFilesChange,
-    extract,
     resetAll,
-    exportHandoverChecklist,
+    exportHandoverPdf,
+    exportSpreadsheet,
     updateHeaderField,
     updateChecklistItem,
     startSow,
@@ -96,19 +96,19 @@ export default function Home() {
             </button>
 
             <button
-              className="button sourceActionButton secondaryActionButton"
-              onClick={() => extract(voiceTranscript)}
-              disabled={isUploading || isGenerating || (!sourceText.trim() && !voiceTranscript.trim())}
+              className="button sourceActionButton exportButton"
+              onClick={exportHandoverPdf}
+              disabled={!result}
             >
-              Quick Checklist
+              ↓ Export PDF
             </button>
 
             <button
               className="button sourceActionButton exportButton"
-              onClick={exportHandoverChecklist}
+              onClick={exportSpreadsheet}
               disabled={!result}
             >
-              ↓ Export
+              ↓ Export Spreadsheet
             </button>
 
             <button className="button sourceActionButton resetButton" onClick={() => { resetAll(); window.location.reload(); }}>

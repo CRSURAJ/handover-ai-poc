@@ -414,7 +414,7 @@ export function ScopeOfWorksPanel({
       )}
 
       {result && (
-        <div className="sowDoc">
+        <>
           {/* Scope flags — click to toggle sections */}
           <div className="sowFlags">
             {FLAG_MAP.map(([label, key]) => (
@@ -432,6 +432,7 @@ export function ScopeOfWorksPanel({
             ))}
           </div>
 
+          <div className="sowDoc">
           {(() => {
             let n = 0;
             const f = result.scopeFlags;
@@ -615,7 +616,8 @@ export function ScopeOfWorksPanel({
               />
             </div>
           )}
-        </div>
+          </div>
+        </>
       )}
     </section>
   );
