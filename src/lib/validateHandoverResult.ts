@@ -30,6 +30,10 @@ const checklistStatuses = new Set<ChecklistStatus>([
   "not_applicable",
 ]);
 
+const checklistCategories = new Set(
+  CHECKLIST_ITEMS.map((item) => item.category),
+);
+
 const overallStatuses = new Set(["ok", "requires_review", "critical"]);
 
 const riskLevels = new Set(["low", "medium", "high", "critical"]);
@@ -139,7 +143,7 @@ function validateChecklistItems(value: unknown) {
       throw new Error(`${path} must be an object.`);
     }
 
-    requireString(item, "category", path);
+    requireStringEnum(item, "category", checklistCategories, path);
     requireString(item, "itemLabel", path);
     requireStringEnum(item, "suggestedStatus", checklistStatuses, path);
     requireString(item, "comments", path);

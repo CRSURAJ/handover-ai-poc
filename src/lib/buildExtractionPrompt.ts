@@ -43,23 +43,35 @@ Extraction rules:
 - Keep the original scope intent. Do not convert supply-only into installation or on-site commissioning. If the scope type is ambiguous, use "needs_review".
 - Keep comments concise and directly useful for Ops handover.
 - For checklist items: comments = best extracted answer; remarks = warnings/exclusions/follow-up; handoverMeetingNotes = what Ops must confirm in the handover meeting.
+- The quote/reference number (e.g. "Q-88213") may appear in exactly ONE place across the whole checklistItems array: leading the comments of the "Itemised Quote" item (e.g. "Quote Q-88213 — ..."). If no quote number is found, say so in that item's comments instead of omitting it silently.
+- Every other checklist item's comments — including "Project Scope" — must NOT mention the quote number at all, even in passing. Wrong: "Quote Q-88213 — Supply of two heat pumps...". Right: "Supply of two heat pumps...". Describe the scope/content on its own terms without citing the quote number.
 
 ## Project Type extraction rules (CRITICAL — read carefully)
 
 The projectType field must be one of exactly these four values:
 "Supply Loose" | "Pre-Fab" | "Pre-Fab &/OR Install" | "Supply Loose & Install"
 
+Definitions:
+- "Supply Loose": ALL equipment supplied as individual loose items — no skid frame, no AH-performed installation, no pipework, no siteworks. The customer does all installation/pipework themselves. A control panel/control box CAN be included and still be "Supply Loose" — AH builds the control box and supplies it loose too, and the customer installs the control box themselves. This does NOT change the classification.
+- "Pre-Fab": AH builds a prefabricated skid in the warehouse and mounts the equipment on it (control panel optionally mounted on the skid, or supplied loose for the customer to fit). Ships as an assembled skid. NEVER includes any on-site installation or siteworks — the customer installs the finished skid themselves.
+- "Pre-Fab &/OR Install": turnkey — AH builds the prefab skid AND performs on-site installation of the skid/equipment.
+- "Supply Loose & Install": AH supplies equipment loose (no prefab skid) AND performs on-site installation/siteworks itself — may include building a skid on site, pipework, etc.
+
 Negation check — ALWAYS look for "without", "W/O", "w/o" BEFORE "skid" or "skid frame":
-- "without Skid Frame", "W/O Skid Frame", "w/o skid frame", "without skid" → NO skid frame → "Supply Loose" (or "Supply Loose & Install" if install is also mentioned)
-- "Skid Frame" present WITHOUT any negation → "Pre-Fab" (or "Pre-Fab &/OR Install" if install is also mentioned)
+- "without Skid Frame", "W/O Skid Frame", "w/o skid frame", "without skid" → NO skid frame → "Supply Loose" (or "Supply Loose & Install" if AH also performs on-site install)
+- "Skid Frame" present WITHOUT any negation → "Pre-Fab" (or "Pre-Fab &/OR Install" if AH also performs on-site install)
 
 Do NOT match on "Skid Frame" alone if it is preceded within 3 words by "without", "W/O", or "w/o". The negation overrides.
+
+CRITICAL — do not confuse customer self-install with AH install: only treat "install" as present if AH (the vendor) is performing on-site installation of the MAIN equipment/skid. A mention of the customer installing a loose-supplied control panel/box themselves does NOT count — that stays "Supply Loose" or "Pre-Fab".
 
 Examples:
 - "Air to Water Heat Pump - without Skid Frame" → "Supply Loose"
 - "Supply of Prefabricated Skid Frame" → "Pre-Fab"
-- "W/O Skid Frame, installation included" → "Supply Loose & Install"
-- "Skid Frame supply and install" → "Pre-Fab &/OR Install"
+- "W/O Skid Frame, AH to install and commission on site" → "Supply Loose & Install"
+- "Skid Frame supply, AH to install and commission on site" → "Pre-Fab &/OR Install"
+- "Control panel supply loose, customer to install on site", no skid frame → "Supply Loose"
+- "Prefabricated skid with control panel mounted, customer to install skid on site" → "Pre-Fab"
 
 Critical items (mandatory before handover can proceed — weight these higher in risk assessment):
 ${criticalLabels}

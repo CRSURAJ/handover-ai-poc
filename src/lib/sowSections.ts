@@ -64,7 +64,7 @@ export function getSowSections(sow: ScopeOfWorksResult): SowSectionData[] {
     });
   }
 
-  if (f.hasSupply && !f.hasCommissioning && !f.installOnly) {
+  if (f.hasSupply && !f.hasInstall && !f.installOnly) {
     sections.push({
       title: "Installation",
       paragraphs: ["Supply only — installation is not in scope for this job."],
@@ -72,7 +72,7 @@ export function getSowSections(sow: ScopeOfWorksResult): SowSectionData[] {
     });
   }
 
-  if (f.hasCommissioning || f.installOnly) {
+  if (f.hasInstall || f.installOnly) {
     sections.push({
       title: "Installation",
       paragraphs: sow.installDescription ? [sow.installDescription] : [],

@@ -19,7 +19,7 @@ export const sowJsonSchema = {
     scopeFlags: {
       type: "object",
       required: [
-        "hasRemoval", "hasSupply", "isPrefabSkid", "installOnly",
+        "hasRemoval", "hasSupply", "isPrefabSkid", "hasInstall", "installOnly",
         "hasElectrical", "hasAncillaries", "hasFat", "hasPreliminaryDrawings",
         "hasCommissioning", "hasProgramme", "hasDelivery",
       ],
@@ -28,6 +28,7 @@ export const sowJsonSchema = {
         hasRemoval:             { type: "boolean" },
         hasSupply:              { type: "boolean" },
         isPrefabSkid:           { type: "boolean" },
+        hasInstall:             { type: "boolean" },
         installOnly:            { type: "boolean" },
         hasElectrical:          { type: "boolean" },
         hasAncillaries:         { type: "boolean" },

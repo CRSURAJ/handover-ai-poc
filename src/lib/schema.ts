@@ -19,6 +19,10 @@ const checklistStatusValues = [
   "not_applicable",
 ];
 
+const checklistCategoryValues = [
+  ...new Set(CHECKLIST_ITEMS.map((item) => item.category)),
+];
+
 const overallStatusValues = ["ok", "requires_review", "critical"];
 
 const riskLevelValues = ["low", "medium", "high", "critical"];
@@ -69,7 +73,7 @@ const checklistItemSchema = {
     "reasoningNote",
   ],
   properties: {
-    category: { type: "string" },
+    category: { enum: checklistCategoryValues },
     itemLabel: { type: "string" },
     suggestedStatus: { enum: checklistStatusValues },
     comments: { type: "string" },

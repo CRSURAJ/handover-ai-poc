@@ -2,6 +2,7 @@ export type ScopeFlags = {
   hasRemoval: boolean;
   hasSupply: boolean;
   isPrefabSkid: boolean;
+  hasInstall: boolean;
   installOnly: boolean;
   hasElectrical: boolean;
   hasAncillaries: boolean;

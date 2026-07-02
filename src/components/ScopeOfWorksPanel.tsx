@@ -21,6 +21,7 @@ const FLAG_MAP: Array<[string, keyof ScopeFlags]> = [
   ["Removal",       "hasRemoval"],
   ["Supply",        "hasSupply"],
   ["Prefab Skid",   "isPrefabSkid"],
+  ["Install",       "hasInstall"],
   ["Install Only",  "installOnly"],
   ["Electrical",    "hasElectrical"],
   ["Ancillaries",   "hasAncillaries"],
@@ -239,6 +240,10 @@ function SowQuestionsForm({
 
   const projectType = answers["project_type"] ?? "";
   const isSupplyLoose = projectType === "Supply Loose";
+  // No AH on-site install of the main equipment — panel install can't happen without AH on site either.
+  const hasNoOnSiteInstall = projectType === "Supply Loose" || projectType === "Pre-Fab";
+  // No skid exists to mount the panel/controller on.
+  const isPrefabFamily = projectType === "Pre-Fab" || projectType === "Pre-Fab &/OR Install";
 
   const handleSetAnswer = (id: string, value: string) => {
     setAnswers(prev => {
@@ -247,7 +252,14 @@ function SowQuestionsForm({
         next["has_removal"] = "false";
         next["has_ancillaries"] = "false";
         next["has_programme"] = "false";
-        if (next["electrical_scope"] === "Installation of Control Panel") {
+      }
+      if (id === "project_type") {
+        const nextHasNoOnSiteInstall = value === "Supply Loose" || value === "Pre-Fab";
+        const nextIsPrefabFamily = value === "Pre-Fab" || value === "Pre-Fab &/OR Install";
+        if (nextHasNoOnSiteInstall && next["electrical_scope"] === "Installation of Control Panel") {
+          next["electrical_scope"] = "No Control Panel needed";
+        }
+        if (!nextIsPrefabFamily && (next["electrical_scope"] === "Mount Control Panel on Skid" || next["electrical_scope"] === "Dual-Pump Controller on Skid")) {
           next["electrical_scope"] = "No Control Panel needed";
         }
       }
@@ -258,10 +270,14 @@ function SowQuestionsForm({
   const shouldShow = (q: SowQuestion) =>
     !(isSupplyLoose && SUPPLY_LOOSE_HIDDEN.has(q.id));
 
-  const getChoices = (q: SowQuestion) =>
-    q.id === "electrical_scope" && isSupplyLoose
-      ? q.choices.filter(c => c !== "Installation of Control Panel")
-      : q.choices;
+  const getChoices = (q: SowQuestion) => {
+    if (q.id !== "electrical_scope") return q.choices;
+    return q.choices.filter(c => {
+      if (c === "Installation of Control Panel") return !hasNoOnSiteInstall;
+      if (c === "Mount Control Panel on Skid" || c === "Dual-Pump Controller on Skid") return isPrefabFamily;
+      return true;
+    });
+  };
 
   const visibleQuestions = questions.filter(shouldShow);
 
@@ -510,7 +526,7 @@ export function ScopeOfWorksPanel({
                   </SowSection>
                 )}
 
-                {f.hasSupply && !f.hasCommissioning && !f.installOnly && (
+                {f.hasSupply && !f.hasInstall && !f.installOnly && (
                   <SowSection num={++n} title="Installation">
                     <div className="sowSupplyOnlyNotice">
                       Supply only — installation is not in scope for this job.
@@ -518,7 +534,7 @@ export function ScopeOfWorksPanel({
                   </SowSection>
                 )}
 
-                {(f.hasCommissioning || f.installOnly) && (
+                {(f.hasInstall || f.installOnly) && (
                   <SowSection num={++n} title="Installation">
                     <EditableText
                       value={result.installDescription}
